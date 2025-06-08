@@ -8,7 +8,6 @@ A Node.js application with Express.js and MongoDB for user management with role-
 - User login
 - Role-based access control (admin and manager roles)
 - JWT authentication
-- User status management (active/blocked)
 
 ## Prerequisites
 
@@ -45,11 +44,9 @@ A Node.js application with Express.js and MongoDB for user management with role-
 - **Body**:
   ```json
   {
-    "name": "John Doe",
     "email": "user@example.com",
     "password": "password123",
-    "role": "manager",
-    "userStatus": "active"
+    "role": "manager"
   }
   ```
 
@@ -67,5 +64,4 @@ A Node.js application with Express.js and MongoDB for user management with role-
 
 - Passwords are hashed using bcrypt
 - JWT tokens are used for authentication
-- Role-based access control for user registration
-- User status check during login (blocked users cannot login) 
+- Role-based access control for user registration 

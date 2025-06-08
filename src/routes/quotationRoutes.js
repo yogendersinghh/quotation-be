@@ -17,7 +17,8 @@ router.post('/upload-signature', uploadSignature.single('signature'), (req, res)
   }
   res.json({
     message: 'Signature uploaded successfully',
-    signaturePath: req.file.path
+    signaturePath: req.file.path,
+    filename: req.file.filename
   });
 });
 
