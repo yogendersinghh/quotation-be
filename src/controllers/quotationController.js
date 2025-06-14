@@ -5,7 +5,6 @@ const Product = require('../models/Product');
 const createQuotation = async (req, res) => {
   try {
     const {
-      quotationRefNumber,
       title,
       client,
       subject,
@@ -21,12 +20,6 @@ const createQuotation = async (req, res) => {
       totalAmount
     } = req.body;
 
-    // Check if quotationRefNumber already exists
-    const existingQuotation = await Quotation.findOne({ quotationRefNumber });
-    if (existingQuotation) {
-      return res.status(400).json({ error: 'Quotation reference number already exists' });
-    }
-
     // Validate products exist
     for (const product of products) {
       const productExists = await Product.findById(product.product);
@@ -36,7 +29,6 @@ const createQuotation = async (req, res) => {
     }
 
     const quotation = new Quotation({
-      quotationRefNumber,
       title,
       client,
       subject,
@@ -69,16 +61,60 @@ const createQuotation = async (req, res) => {
   }
 };
 
-// Get all quotations with pagination
+// Get all quotations with pagination and filters
 const getAllQuotations = async (req, res) => {
   try {
     const { page, limit, skip, sort } = req.pagination;
+    const {
+      client,
+      month,
+      converted,
+      status,
+      userId,
+      search
+    } = req.query;
 
-    // Get total count
-    const total = await Quotation.countDocuments();
+    // Build filter object - always scope to current user
+    const filter = {
+      createdBy: userId
+    };
 
-    // Get paginated quotations
-    const quotations = await Quotation.find()
+    // Add search filter if provided
+    if (search) {
+      filter.title = { $regex: search, $options: 'i' };
+    }
+
+    // Add client filter if provided
+    if (client) {
+      filter.client = client;
+    }
+
+    // Add month filter if provided
+    if (month) {
+      const [year, monthNum] = month.split('-');
+      const startDate = new Date(year, monthNum - 1, 1);
+      const endDate = new Date(year, monthNum, 0);
+      filter.createdAt = {
+        $gte: startDate,
+        $lte: endDate
+      };
+    }
+
+    // Add conversion status filter if provided
+    if (converted) {
+      filter.converted = converted;
+    }
+
+    // Add status filter if provided
+    if (status) {
+      filter.status = status;
+    }
+
+    // Get total count with filters
+    const total = await Quotation.countDocuments(filter);
+
+    // Get paginated quotations with filters
+    const quotations = await Quotation.find(filter)
       .populate([
         { path: 'client', select: 'name email position' },
         { path: 'products.product', select: 'name description price' },
@@ -95,6 +131,13 @@ const getAllQuotations = async (req, res) => {
         limit,
         total,
         pages: Math.ceil(total / limit)
+      },
+      filters: {
+        client,
+        month,
+        converted,
+        status,
+        search
       }
     });
   } catch (error) {
@@ -126,7 +169,6 @@ const getQuotationById = async (req, res) => {
 const updateQuotation = async (req, res) => {
   try {
     const {
-      quotationRefNumber,
       title,
       client,
       subject,
@@ -140,21 +182,14 @@ const updateQuotation = async (req, res) => {
       termsAndConditions,
       signatureImage,
       totalAmount,
-      status
+      status,
+      converted
     } = req.body;
 
     // Check if quotation exists
     const quotation = await Quotation.findById(req.params.id);
     if (!quotation) {
       return res.status(404).json({ error: 'Quotation not found' });
-    }
-
-    // If quotationRefNumber is being updated, check if it already exists
-    if (quotationRefNumber && quotationRefNumber !== quotation.quotationRefNumber) {
-      const existingQuotation = await Quotation.findOne({ quotationRefNumber });
-      if (existingQuotation) {
-        return res.status(400).json({ error: 'Quotation reference number already exists' });
-      }
     }
 
     // Validate products exist if being updated
@@ -171,7 +206,6 @@ const updateQuotation = async (req, res) => {
     const updatedQuotation = await Quotation.findByIdAndUpdate(
       req.params.id,
       {
-        quotationRefNumber,
         title,
         client,
         subject,
@@ -185,7 +219,8 @@ const updateQuotation = async (req, res) => {
         termsAndConditions,
         signatureImage,
         totalAmount,
-        status
+        status,
+        converted
       },
       { new: true }
     ).populate([
@@ -225,3 +260,6 @@ module.exports = {
   updateQuotation,
   deleteQuotation
 }; 
+
+
+

@@ -82,16 +82,28 @@ const loginUser = async (req, res) => {
   }
 };
 
-// Get all users with pagination
+// Get all users with pagination and search
 const getAllUsers = async (req, res) => {
   try {
     const { page, limit, skip, sort } = req.pagination;
+    const { search } = req.query;
 
-    // Get total count
-    const total = await User.countDocuments();
+    // Build filter object
+    const filter = {};
 
-    // Get paginated users
-    const users = await User.find()
+    // Add search filter if provided
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    // Get total count with filters
+    const total = await User.countDocuments(filter);
+
+    // Get paginated users with filters
+    const users = await User.find(filter)
       .select('-password')
       .sort(sort)
       .skip(skip)
@@ -104,7 +116,81 @@ const getAllUsers = async (req, res) => {
         limit,
         total,
         pages: Math.ceil(total / limit)
+      },
+      filters: {
+        search
       }
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Update user
+const updateUser = async (req, res) => {
+  try {
+    const { name, email, role, userStatus } = req.body;
+    const userId = req.params.id;
+
+    // Check if user exists
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // If email is being updated, check if it already exists
+    if (email && email !== user.email) {
+      const existingUser = await User.findOne({ email });
+      if (existingUser) {
+        return res.status(400).json({ error: 'Email already registered' });
+      }
+    }
+
+    // Update user
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      {
+        name,
+        email,
+        role,
+        userStatus
+      },
+      { new: true }
+    ).select('-password');
+
+    res.json({
+      message: 'User updated successfully',
+      user: updatedUser
+    });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+// Delete user
+const deleteUser = async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    // Check if user exists
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Prevent deleting the last admin
+    if (user.role === 'admin') {
+      const adminCount = await User.countDocuments({ role: 'admin' });
+      if (adminCount <= 1) {
+        return res.status(400).json({ error: 'Cannot delete the last admin user' });
+      }
+    }
+
+    // Delete user
+    await User.findByIdAndDelete(userId);
+
+    res.json({
+      message: 'User deleted successfully'
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -114,5 +200,7 @@ const getAllUsers = async (req, res) => {
 module.exports = {
   registerUser,
   loginUser,
-  getAllUsers
+  getAllUsers,
+  updateUser,
+  deleteUser
 }; 

@@ -35,12 +35,25 @@ const createClient = async (req, res) => {
 const getAllClients = async (req, res) => {
   try {
     const { page, limit, skip, sort } = req.pagination;
+    const { search } = req.query;
+    console.log("🚀 ~ getAllClients ~ search:", search)
 
-    // Get total count
-    const total = await Client.countDocuments();
+    // Build filter object
+    const filter = {};
 
-    // Get paginated clients
-    const clients = await Client.find()
+    // Add search filter if provided
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    // Get total count with filters
+    const total = await Client.countDocuments(filter);
+
+    // Get paginated clients with filters
+    const clients = await Client.find(filter)
       .populate('createdBy', 'name email')
       .sort(sort)
       .skip(skip)
@@ -53,6 +66,9 @@ const getAllClients = async (req, res) => {
         limit,
         total,
         pages: Math.ceil(total / limit)
+      },
+      filters: {
+        search
       }
     });
   } catch (error) {
