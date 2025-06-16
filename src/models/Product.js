@@ -11,9 +11,9 @@ const productSchema = new mongoose.Schema({
     trim: true
   },
   model: {
-    type: String,
-    required: true,
-    trim: true
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Model',
+    required: true
   },
   type: {
     type: String,
@@ -37,6 +37,10 @@ const productSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Category',
     required: true
+  },
+  notes: {
+    type: String,
+    trim: true
   }
 }, {
   timestamps: true

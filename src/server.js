@@ -10,6 +10,7 @@ const uploadRoutes = require('./routes/uploadRoutes');
 const clientRoutes = require('./routes/clientRoutes');
 const quotationRoutes = require('./routes/quotationRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
+const modelRoutes = require('./routes/modelRoutes');
 // const { adminJs, router: adminRouter } = require('./admin/admin');
 
 const app = express();
@@ -39,6 +40,7 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/clients', clientRoutes);
 app.use('/api/quotations', quotationRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/models', modelRoutes);
 
 // AdminJS
 // app.use(adminJs.options.rootPath, adminRouter);

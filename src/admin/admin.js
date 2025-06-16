@@ -4,6 +4,7 @@ const AdminJSMongoose = require('@adminjs/mongoose');
 const User = require('../models/User');
 const Product = require('../models/Product');
 const Category = require('../models/Category');
+const Model = require('../models/Model');
 
 AdminJS.registerAdapter({
   Resource: AdminJSMongoose.Resource,
@@ -39,6 +40,16 @@ const adminJs = new AdminJS({
     },
     {
       resource: Category,
+    },
+    {
+      resource: Model,
+      options: {
+        properties: {
+          specifications: {
+            type: 'mixed',
+          },
+        },
+      },
     },
   ],
   rootPath: '/admin',

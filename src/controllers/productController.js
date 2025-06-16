@@ -1,9 +1,16 @@
 const Product = require('../models/Product');
+const Model = require('../models/Model');
 
 // Create a new product (admin only)
 const createProduct = async (req, res) => {
   try {
-    const { productImage, title, model, type, features, price, warranty, category } = req.body;
+    const { productImage, title, model, type, features, price, warranty, category, notes } = req.body;
+
+    // Validate model exists
+    const modelExists = await Model.findById(model);
+    if (!modelExists) {
+      return res.status(400).json({ error: 'Model not found' });
+    }
 
     const product = new Product({
       productImage,
@@ -13,11 +20,15 @@ const createProduct = async (req, res) => {
       features,
       price,
       warranty,
-      category
+      category,
+      notes
     });
 
     await product.save();
-    await product.populate('category', 'name');
+    await product.populate([
+      { path: 'category', select: 'name' },
+      { path: 'model', select: 'name' }
+    ]);
 
     res.status(201).json({
       message: 'Product created successfully',
@@ -28,17 +39,31 @@ const createProduct = async (req, res) => {
   }
 };
 
-// Get all products with pagination
+// Get all products with pagination and filtering
 const getAllProducts = async (req, res) => {
   try {
     const { page, limit, skip, sort } = req.pagination;
+    const { title, model, category } = req.query;
 
-    // Get total count
-    const total = await Product.countDocuments();
+    // Build filter object
+    const filter = {};
+    if (title) {
+      filter.title = { $regex: title, $options: 'i' };
+    }
+    if (model) {
+      filter.model = model;
+    }
+    if (category) {
+      filter.category = category;
+    }
 
-    // Get paginated products
-    const products = await Product.find()
+    // Get total count with filters
+    const total = await Product.countDocuments(filter);
+
+    // Get paginated products with filters
+    const products = await Product.find(filter)
       .populate('category', 'name')
+      .populate('model', 'name')
       .sort(sort)
       .skip(skip)
       .limit(limit);
@@ -60,7 +85,10 @@ const getAllProducts = async (req, res) => {
 // Get product by ID
 const getProductById = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id).populate('category', 'name');
+    const product = await Product.findById(req.params.id)
+      .populate('category', 'name')
+      .populate('model', 'name');
+      
     if (!product) {
       return res.status(404).json({ error: 'Product not found' });
     }
