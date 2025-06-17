@@ -42,6 +42,10 @@ app.use('/api/quotations', quotationRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/models', modelRoutes);
 
+
+app.get("/",(req,res)=>{
+  res.send("this is working")
+})
 // AdminJS
 // app.use(adminJs.options.rootPath, adminRouter);
 
