@@ -98,6 +98,55 @@ const getProductById = async (req, res) => {
   }
 };
 
+// Update product (admin only)
+const updateProduct = async (req, res) => {
+  try {
+    const { productImage, title, model, type, features, price, warranty, category, notes } = req.body;
+    const productId = req.params.id;
+
+    // Check if product exists
+    const existingProduct = await Product.findById(productId);
+    if (!existingProduct) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    // Validate model exists if it's being updated
+    if (model) {
+      const modelExists = await Model.findById(model);
+      if (!modelExists) {
+        return res.status(400).json({ error: 'Model not found' });
+      }
+    }
+
+    // Update product
+    const updatedProduct = await Product.findByIdAndUpdate(
+      productId,
+      {
+        productImage,
+        title,
+        model,
+        type,
+        features,
+        price,
+        warranty,
+        category,
+        notes
+      },
+      { new: true, runValidators: true }
+    ).populate([
+      { path: 'category', select: 'name' },
+      { path: 'model', select: 'name' }
+    ]);
+
+    res.json({
+      message: 'Product updated successfully',
+      product: updatedProduct
+    });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
 // Delete product (admin only)
 const deleteProduct = async (req, res) => {
   try {
@@ -115,5 +164,6 @@ module.exports = {
   createProduct,
   getAllProducts,
   getProductById,
+  updateProduct,
   deleteProduct
 }; 
