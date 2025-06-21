@@ -15,11 +15,6 @@ const productSchema = new mongoose.Schema({
     ref: 'Model',
     required: true
   },
-  type: {
-    type: String,
-    required: true,
-    trim: true
-  },
   features: [{
     type: String,
     trim: true
