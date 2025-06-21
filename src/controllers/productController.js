@@ -63,9 +63,7 @@ const getAllProducts = async (req, res) => {
       filter.model = model;
     }
     if (categories) {
-      // categories can be a comma-separated string of IDs
-      const categoryArray = Array.isArray(categories) ? categories : categories.split(',');
-      filter.categories = { $in: categoryArray };
+      filter.categories = { $in: [categories] };
     }
 
     // Get total count with filters
