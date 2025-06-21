@@ -4,7 +4,7 @@ const Model = require('../models/Model');
 // Create a new product (admin only)
 const createProduct = async (req, res) => {
   try {
-    const { productImage, title, model, type, features, price, warranty, categories, notes } = req.body;
+    const { productImage, title, model, type, features, price, warranty, categories, notes, description } = req.body;
 
     // Validate model exists
     const modelExists = await Model.findById(model);
@@ -30,7 +30,8 @@ const createProduct = async (req, res) => {
       price,
       warranty,
       categories,
-      notes
+      notes,
+      description
     });
 
     await product.save();
@@ -63,7 +64,8 @@ const getAllProducts = async (req, res) => {
       filter.model = model;
     }
     if (categories) {
-      filter.categories = { $in: [categories] };
+      const categoryArray = Array.isArray(categories) ? categories : categories.split(',');
+      filter.categories = { $in: categoryArray };
     }
 
     // Get total count with filters
@@ -110,7 +112,7 @@ const getProductById = async (req, res) => {
 // Update product (admin only)
 const updateProduct = async (req, res) => {
   try {
-    const { productImage, title, model, type, features, price, warranty, categories, notes } = req.body;
+    const { productImage, title, model, type, features, price, warranty, categories, notes, description } = req.body;
     const productId = req.params.id;
 
     // Check if product exists
@@ -149,7 +151,8 @@ const updateProduct = async (req, res) => {
         price,
         warranty,
         categories,
-        notes
+        notes,
+        description
       },
       { new: true, runValidators: true }
     ).populate([
