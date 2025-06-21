@@ -44,6 +44,31 @@ const getCategoryById = async (req, res) => {
   }
 };
 
+// Update category (admin only)
+const updateCategory = async (req, res) => {
+  try {
+    const { name, description } = req.body;
+    const categoryId = req.params.id;
+
+    const category = await Category.findByIdAndUpdate(
+      categoryId,
+      { name, description },
+      { new: true, runValidators: true }
+    );
+
+    if (!category) {
+      return res.status(404).json({ error: 'Category not found' });
+    }
+
+    res.json({
+      message: 'Category updated successfully',
+      category
+    });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
 // Delete category (admin only)
 const deleteCategory = async (req, res) => {
   try {
@@ -61,5 +86,6 @@ module.exports = {
   createCategory,
   getAllCategories,
   getCategoryById,
+  updateCategory,
   deleteCategory
 }; 
