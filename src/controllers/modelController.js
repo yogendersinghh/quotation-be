@@ -10,7 +10,7 @@ const createModel = asyncHandler(async (req, res) => {
   const model = await Model.create({
     name,
     description,
-    specifications
+    specifications // now a string
   });
 
   res.status(201).json(model);

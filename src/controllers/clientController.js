@@ -3,12 +3,16 @@ const Client = require('../models/Client');
 // Create a new client
 const createClient = async (req, res) => {
   try {
-    const { name, email, position, address, phone } = req.body;
+    const { name, email, position, address, phone, companyName } = req.body;
 
     // Check if client with email already exists
     const existingClient = await Client.findOne({ email });
     if (existingClient) {
       return res.status(400).json({ error: 'Client with this email already exists' });
+    }
+
+    if (!companyName) {
+      return res.status(400).json({ error: 'Company name is required' });
     }
 
     const client = new Client({
@@ -17,6 +21,7 @@ const createClient = async (req, res) => {
       position,
       address,
       phone,
+      companyName,
       createdBy: req.user._id
     });
 
@@ -95,7 +100,7 @@ const getClientById = async (req, res) => {
 // Update client
 const updateClient = async (req, res) => {
   try {
-    const { name, email, position, address, phone } = req.body;
+    const { name, email, position, address, phone, companyName } = req.body;
 
     // Check if client exists
     const client = await Client.findById(req.params.id);
@@ -114,7 +119,7 @@ const updateClient = async (req, res) => {
     // Update client
     const updatedClient = await Client.findByIdAndUpdate(
       req.params.id,
-      { name, email, position, address, phone },
+      { name, email, position, address, phone, companyName },
       { new: true }
     ).populate('createdBy', 'name email');
 

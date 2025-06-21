@@ -12,8 +12,8 @@ const modelSchema = new mongoose.Schema({
     trim: true
   },
   specifications: {
-    type: Map,
-    of: String
+    type: String,
+    trim: true
   },
   isActive: {
     type: Boolean,

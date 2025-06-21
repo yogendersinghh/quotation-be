@@ -4,6 +4,6 @@ const { getDashboardStatistics } = require('../controllers/dashboardController')
 const { auth,isAdmin } = require('../middleware/auth');
 
 // GET /api/dashboard/statistics
-router.post('/statistics', auth,isAdmin, getDashboardStatistics);
+router.post('/statistics', auth, getDashboardStatistics);
 
 module.exports = router; 

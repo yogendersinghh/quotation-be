@@ -28,6 +28,11 @@ const clientSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  companyName: {
+    type: String,
+    required: true,
+    trim: true
+  },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
