@@ -20,7 +20,22 @@ const app = express();
 // app.set('view engine', 'ejs');
 // app.set('views', path.join(__dirname, 'views'));
 
-app.use(cors());
+// CORS configuration
+const corsOptions = {
+  origin: [
+    'https://cms.yogendersingh.tech',
+    'https://cms.yogendersingh.tech/',
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'http://localhost:5173',
+    'http://localhost:4173'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -36,7 +51,6 @@ app.use('/api/clients', clientRoutes);
 app.use('/api/quotations', quotationRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/models', modelRoutes);
-// app.use('/api/pdf', pdfRoutes);
 
 
 app.get("/",(req,res)=>{
