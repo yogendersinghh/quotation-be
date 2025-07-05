@@ -12,22 +12,9 @@ const {
 const { auth } = require('../middleware/auth');
 const { checkRole } = require('../middleware/roleCheck');
 const pagination = require('../middleware/pagination');
-const uploadSignature = require('../middleware/signatureUpload');
 
 // All routes require authentication
 router.use(auth);
-
-// Upload signature
-router.post('/upload-signature', uploadSignature.single('signature'), (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ error: 'No signature file uploaded' });
-  }
-  res.json({
-    message: 'Signature uploaded successfully',
-    signaturePath: req.file.path,
-    filename: req.file.filename
-  });
-});
 
 // Admin-only routes
 router.get('/admin/all', checkRole(['admin']), pagination, getAllQuotationsForAdmin);

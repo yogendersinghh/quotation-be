@@ -7,9 +7,14 @@ const clientSchema = new mongoose.Schema({
     trim: true
   },
   email: {
-    type: String,
+    type: [String],
     required: true,
-    unique: true,
+    validate: {
+      validator: function(emails) {
+        return emails.length > 0;
+      },
+      message: 'At least one email is required'
+    },
     trim: true,
     lowercase: true
   },
@@ -23,9 +28,35 @@ const clientSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
-  phone: {
+  place: {
     type: String,
     required: true,
+    trim: true
+  },
+  city: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  state: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  PIN: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  phone: {
+    type: [String],
+    required: true,
+    validate: {
+      validator: function(numbers) {
+        return numbers.length > 0;
+      },
+      message: 'At least one mobile number is required'
+    },
     trim: true
   },
   companyName: {
@@ -41,6 +72,9 @@ const clientSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
+
+// Create a compound index for email uniqueness across all emails in the array
+clientSchema.index({ email: 1 }, { unique: true });
 
 const Client = mongoose.model('Client', clientSchema);
 

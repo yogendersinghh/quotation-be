@@ -66,6 +66,14 @@ const quotationSchema = new mongoose.Schema({
     trim: true
   },
   products: [productItemSchema],
+  relatedProducts: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Product'
+  }],
+  suggestedProducts: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Product'
+  }],
   machineInstallation: machineInstallationSchema,
   notes: {
     type: String,

@@ -3,12 +3,35 @@ const Client = require('../models/Client');
 // Create a new client
 const createClient = async (req, res) => {
   try {
-    const { name, email, position, address, phone, companyName } = req.body;
+    const { 
+      name, 
+      email, 
+      position, 
+      address, 
+      place,
+      city,
+      state,
+      PIN,
+      phone, 
+      companyName 
+    } = req.body;
 
-    // Check if client with email already exists
-    const existingClient = await Client.findOne({ email });
+    // Validate that email is an array and has at least one email
+    if (!Array.isArray(email) || email.length === 0) {
+      return res.status(400).json({ error: 'At least one email is required' });
+    }
+
+    // Validate that phone is an array and has at least one number
+    if (!Array.isArray(phone) || phone.length === 0) {
+      return res.status(400).json({ error: 'At least one mobile number is required' });
+    }
+
+    // Check if any client with any of the provided emails already exists
+    const existingClient = await Client.findOne({ 
+      email: { $in: email } 
+    });
     if (existingClient) {
-      return res.status(400).json({ error: 'Client with this email already exists' });
+      return res.status(400).json({ error: 'Client with one of these emails already exists' });
     }
 
     if (!companyName) {
@@ -20,6 +43,10 @@ const createClient = async (req, res) => {
       email,
       position,
       address,
+      place,
+      city,
+      state,
+      PIN,
       phone,
       companyName,
       createdBy: req.user._id
@@ -50,7 +77,13 @@ const getAllClients = async (req, res) => {
     if (search) {
       filter.$or = [
         { name: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } }
+        { email: { $regex: search, $options: 'i' } },
+        { phone: { $regex: search, $options: 'i' } },
+        { companyName: { $regex: search, $options: 'i' } },
+        { address: { $regex: search, $options: 'i' } },
+        { place: { $regex: search, $options: 'i' } },
+        { city: { $regex: search, $options: 'i' } },
+        { state: { $regex: search, $options: 'i' } }
       ];
     }
 
@@ -100,7 +133,18 @@ const getClientById = async (req, res) => {
 // Update client
 const updateClient = async (req, res) => {
   try {
-    const { name, email, position, address, phone, companyName } = req.body;
+    const { 
+      name, 
+      email, 
+      position, 
+      address, 
+      place,
+      city,
+      state,
+      PIN,
+      phone, 
+      companyName 
+    } = req.body;
 
     // Check if client exists
     const client = await Client.findById(req.params.id);
@@ -108,18 +152,42 @@ const updateClient = async (req, res) => {
       return res.status(404).json({ error: 'Client not found' });
     }
 
-    // Check if email is being changed and if it's already in use
-    if (email && email !== client.email) {
-      const existingClient = await Client.findOne({ email });
+    // Validate that email is an array and has at least one email if provided
+    if (email && (!Array.isArray(email) || email.length === 0)) {
+      return res.status(400).json({ error: 'At least one email is required' });
+    }
+
+    // Validate that phone is an array and has at least one number if provided
+    if (phone && (!Array.isArray(phone) || phone.length === 0)) {
+      return res.status(400).json({ error: 'At least one mobile number is required' });
+    }
+
+    // Check if any of the new emails are already in use by other clients
+    if (email) {
+      const existingClient = await Client.findOne({ 
+        email: { $in: email },
+        _id: { $ne: req.params.id } // Exclude current client
+      });
       if (existingClient) {
-        return res.status(400).json({ error: 'Email already in use by another client' });
+        return res.status(400).json({ error: 'One of these emails is already in use by another client' });
       }
     }
 
     // Update client
     const updatedClient = await Client.findByIdAndUpdate(
       req.params.id,
-      { name, email, position, address, phone, companyName },
+      { 
+        name, 
+        email, 
+        position, 
+        address, 
+        place,
+        city,
+        state,
+        PIN,
+        phone, 
+        companyName 
+      },
       { new: true }
     ).populate('createdBy', 'name email');
 

@@ -15,6 +15,10 @@ const productSchema = new mongoose.Schema({
     ref: 'Model',
     required: true
   },
+  type: {
+    type: String,
+    trim: true
+  },
   features: [{
     type: String,
     trim: true
@@ -27,6 +31,18 @@ const productSchema = new mongoose.Schema({
   warranty: {
     type: String,
     required: true
+  },
+  quality: {
+    type: String,
+    trim: true
+  },
+  specification: {
+    type: String,
+    trim: true
+  },
+  termsAndCondition: {
+    type: String,
+    trim: true
   },
   categories: [{
     type: mongoose.Schema.Types.ObjectId,

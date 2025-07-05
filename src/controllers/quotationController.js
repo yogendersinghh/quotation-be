@@ -10,6 +10,8 @@ const createQuotation = async (req, res) => {
       subject,
       formalMessage,
       products,
+      relatedProducts,
+      suggestedProducts,
       machineInstallation,
       notes,
       billingDetails,
@@ -28,12 +30,34 @@ const createQuotation = async (req, res) => {
       }
     }
 
+    // Validate related products exist if provided
+    if (relatedProducts && Array.isArray(relatedProducts)) {
+      for (const productId of relatedProducts) {
+        const productExists = await Product.findById(productId);
+        if (!productExists) {
+          return res.status(400).json({ error: `Related product with ID ${productId} not found` });
+        }
+      }
+    }
+
+    // Validate suggested products exist if provided
+    if (suggestedProducts && Array.isArray(suggestedProducts)) {
+      for (const productId of suggestedProducts) {
+        const productExists = await Product.findById(productId);
+        if (!productExists) {
+          return res.status(400).json({ error: `Suggested product with ID ${productId} not found` });
+        }
+      }
+    }
+
     const quotation = new Quotation({
       title,
       client,
       subject,
       formalMessage,
       products,
+      relatedProducts,
+      suggestedProducts,
       machineInstallation,
       notes,
       billingDetails,
@@ -48,7 +72,9 @@ const createQuotation = async (req, res) => {
     await quotation.save();
     await quotation.populate([
       { path: 'client', select: 'name email position' },
-      { path: 'products.product', select: 'name description price' },
+      { path: 'products.product', select: 'name description price productImage notes' },
+      { path: 'relatedProducts', select: 'name description price productImage notes' },
+      { path: 'suggestedProducts', select: 'name description price productImage notes' },
       { path: 'createdBy', select: 'name email' }
     ]);
 
@@ -89,15 +115,25 @@ const getAllQuotations = async (req, res) => {
       filter.client = client;
     }
 
-    // Add month filter if provided
-    if (month) {
-      const [year, monthNum] = month.split('-');
-      const startDate = new Date(year, monthNum - 1, 1);
-      const endDate = new Date(year, monthNum, 0);
-      filter.createdAt = {
-        $gte: startDate,
-        $lte: endDate
-      };
+    // Add fromMonth filter if provided
+    if (req.query.fromMonth) {
+      const [fromYear, fromMonthNum] = req.query.fromMonth.split('-');
+      const fromDate = new Date(fromYear, fromMonthNum - 1, 1);
+      if (!filter.createdAt) {
+        filter.createdAt = {};
+      }
+      filter.createdAt.$gte = fromDate;
+    }
+
+    // Add toMonth filter if provided
+    if (req.query.toMonth) {
+      const [toYear, toMonthNum] = req.query.toMonth.split('-');
+      // Set to last millisecond of the month
+      const toDate = new Date(toYear, toMonthNum, 0, 23, 59, 59, 999);
+      if (!filter.createdAt) {
+        filter.createdAt = {};
+      }
+      filter.createdAt.$lte = toDate;
     }
 
     // Add conversion status filter if provided
@@ -118,6 +154,8 @@ const getAllQuotations = async (req, res) => {
       .populate([
         { path: 'client', select: 'name email position' },
         { path: 'products.product', select: 'name description price' },
+        { path: 'relatedProducts', select: 'name description price' },
+        { path: 'suggestedProducts', select: 'name description price' },
         { path: 'createdBy', select: 'name email' }
       ])
       .sort(sort)
@@ -152,6 +190,8 @@ const getQuotationById = async (req, res) => {
       .populate([
         { path: 'client', select: 'name email position' },
         { path: 'products.product', select: 'name description price' },
+        { path: 'relatedProducts', select: 'name description price' },
+        { path: 'suggestedProducts', select: 'name description price' },
         { path: 'createdBy', select: 'name email' }
       ]);
 
@@ -174,6 +214,8 @@ const updateQuotation = async (req, res) => {
       subject,
       formalMessage,
       products,
+      relatedProducts,
+      suggestedProducts,
       machineInstallation,
       notes,
       billingDetails,
@@ -201,6 +243,26 @@ const updateQuotation = async (req, res) => {
       }
     }
 
+    // Validate related products exist if provided
+    if (relatedProducts && Array.isArray(relatedProducts)) {
+      for (const productId of relatedProducts) {
+        const productExists = await Product.findById(productId);
+        if (!productExists) {
+          return res.status(400).json({ error: `Related product with ID ${productId} not found` });
+        }
+      }
+    }
+
+    // Validate suggested products exist if provided
+    if (suggestedProducts && Array.isArray(suggestedProducts)) {
+      for (const productId of suggestedProducts) {
+        const productExists = await Product.findById(productId);
+        if (!productExists) {
+          return res.status(400).json({ error: `Suggested product with ID ${productId} not found` });
+        }
+      }
+    }
+
     // Update quotation
     const updatedQuotation = await Quotation.findByIdAndUpdate(
       req.params.id,
@@ -210,6 +272,8 @@ const updateQuotation = async (req, res) => {
         subject,
         formalMessage,
         products,
+        relatedProducts,
+        suggestedProducts,
         machineInstallation,
         notes,
         billingDetails,
@@ -224,6 +288,8 @@ const updateQuotation = async (req, res) => {
     ).populate([
       { path: 'client', select: 'name email position' },
       { path: 'products.product', select: 'name description price' },
+      { path: 'relatedProducts', select: 'name description price' },
+      { path: 'suggestedProducts', select: 'name description price' },
       { path: 'createdBy', select: 'name email' }
     ]);
 
@@ -305,7 +371,8 @@ const getAllQuotationsForAdmin = async (req, res) => {
     const { page, limit, skip, sort } = req.pagination;
     const {
       client,
-      month,
+      fromMonth,
+      toMonth,
       converted,
       status,
       search
@@ -325,14 +392,26 @@ const getAllQuotationsForAdmin = async (req, res) => {
     }
 
     // Add month filter if provided
-    if (month) {
-      const [year, monthNum] = month.split('-');
-      const startDate = new Date(year, monthNum - 1, 1);
-      const endDate = new Date(year, monthNum, 0);
-      filter.createdAt = {
-        $gte: startDate,
-        $lte: endDate
-      };
+
+    // Add fromMonth filter if provided
+    if (fromMonth) {
+      const [fromYear, fromMonthNum] = fromMonth.split('-');
+      const fromDate = new Date(fromYear, fromMonthNum - 1, 1);
+      if (!filter.createdAt) {
+        filter.createdAt = {};
+      }
+      filter.createdAt.$gte = fromDate;
+    }
+
+    // Add toMonth filter if provided
+    if (toMonth) {
+      const [toYear, toMonthNum] = toMonth.split('-');
+      // Set to last millisecond of the month
+      const toDate = new Date(toYear, toMonthNum, 0, 23, 59, 59, 999);
+      if (!filter.createdAt) {
+        filter.createdAt = {};
+      }
+      filter.createdAt.$lte = toDate;
     }
 
     // Add conversion status filter if provided
@@ -353,6 +432,8 @@ const getAllQuotationsForAdmin = async (req, res) => {
       .populate([
         { path: 'client', select: 'name email position' },
         { path: 'products.product', select: 'name description price' },
+        { path: 'relatedProducts', select: 'name description price' },
+        { path: 'suggestedProducts', select: 'name description price' },
         { path: 'createdBy', select: 'name email' }
       ])
       .sort(sort)

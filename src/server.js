@@ -11,20 +11,15 @@ const clientRoutes = require('./routes/clientRoutes');
 const quotationRoutes = require('./routes/quotationRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const modelRoutes = require('./routes/modelRoutes');
+// const pdfRoutes = require('./routes/pdfRoutes');
 // const { adminJs, router: adminRouter } = require('./admin/admin');
 
 const app = express();
 
-// CORS configuration
-const corsOptions = {
-  origin: process.env.CORS_ORIGIN || '*', // Allow all origins in development
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true,
-  maxAge: 86400 // 24 hours
-};
+// Set EJS as template engine
+// app.set('view engine', 'ejs');
+// app.set('views', path.join(__dirname, 'views'));
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -41,6 +36,7 @@ app.use('/api/clients', clientRoutes);
 app.use('/api/quotations', quotationRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/models', modelRoutes);
+// app.use('/api/pdf', pdfRoutes);
 
 
 app.get("/",(req,res)=>{
