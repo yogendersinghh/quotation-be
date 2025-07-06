@@ -1,5 +1,64 @@
 const Quotation = require('../models/Quotation');
 const Product = require('../models/Product');
+const puppeteer = require('puppeteer');
+const ejs = require('ejs');
+const path = require('path');
+const fs = require('fs').promises;
+
+// Utility to generate and attach PDF
+async function generateAndAttachPDF(quotation) {
+  // Repopulate for fresh data
+  await quotation.populate([
+    { path: 'client' },
+    { path: 'products.product', populate: { path: 'model', model: 'Model' } },
+    { path: 'createdBy' }
+  ]);
+  const templatePath = path.join(__dirname, '../views/quotation.ejs');
+  const templateContent = await fs.readFile(templatePath, 'utf8');
+  const htmlContent = ejs.render(templateContent, {
+    quotation,
+    client: quotation.client,
+    user: quotation.createdBy,
+    BASE_URL: process.env.BASE_URL
+  });
+  const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+  const page = await browser.newPage();
+  await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+  const headerTemplate = `
+    <div style="width:100%;padding:0 32px;box-sizing:border-box;">
+      <div style="display:flex;align-items:flex-start;gap:10px;">
+        <img src='https://via.placeholder.com/40x40/ff9900/ffffff?text=LOGO' style='width:40px;height:auto;margin:0;'>
+        <div>
+          <div style='font-size:18px;font-weight:bold;color:#222;'>FIVE STAR TECHNOLOGIES</div>
+          <div style='font-size:10px;color:#111;'>
+            Address: C-177, Sector-10, Noida - 201301<br>
+            Ph: (0120)4548366, email: info@fstindia.in, fivestartech.net@gmail.com<br>
+            website: www.fstindia.in
+          </div>
+          <div style='font-size:12px;color:#003366;font-weight:bold;margin-top:2px;'>
+            FIVE STAR helps industries to efficiently manage <span style='color:#003366;'>LIGHT I AIR I ENERGY</span> in partnership with leading brands of India
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  const pdfBuffer = await page.pdf({
+    format: 'A4',
+    printBackground: true,
+    margin: { top: '120px', right: '20mm', bottom: '20mm', left: '20mm' },
+    displayHeaderFooter: true,
+    headerTemplate: headerTemplate,
+    footerTemplate: '<span></span>'
+  });
+  await browser.close();
+  const pdfsDir = path.join(__dirname, '../../public/pdfs');
+  await fs.mkdir(pdfsDir, { recursive: true });
+  const fileName = `quotation-${quotation.quotationRefNumber}-${Date.now()}.pdf`;
+  const filePath = path.join(pdfsDir, fileName);
+  await fs.writeFile(filePath, pdfBuffer);
+  quotation.pdfFileName = fileName;
+  await quotation.save();
+}
 
 // Create a new quotation
 const createQuotation = async (req, res) => {
@@ -10,8 +69,6 @@ const createQuotation = async (req, res) => {
       subject,
       formalMessage,
       products,
-      relatedProducts,
-      suggestedProducts,
       machineInstallation,
       notes,
       billingDetails,
@@ -30,34 +87,12 @@ const createQuotation = async (req, res) => {
       }
     }
 
-    // Validate related products exist if provided
-    if (relatedProducts && Array.isArray(relatedProducts)) {
-      for (const productId of relatedProducts) {
-        const productExists = await Product.findById(productId);
-        if (!productExists) {
-          return res.status(400).json({ error: `Related product with ID ${productId} not found` });
-        }
-      }
-    }
-
-    // Validate suggested products exist if provided
-    if (suggestedProducts && Array.isArray(suggestedProducts)) {
-      for (const productId of suggestedProducts) {
-        const productExists = await Product.findById(productId);
-        if (!productExists) {
-          return res.status(400).json({ error: `Suggested product with ID ${productId} not found` });
-        }
-      }
-    }
-
     const quotation = new Quotation({
       title,
       client,
       subject,
       formalMessage,
       products,
-      relatedProducts,
-      suggestedProducts,
       machineInstallation,
       notes,
       billingDetails,
@@ -72,11 +107,10 @@ const createQuotation = async (req, res) => {
     await quotation.save();
     await quotation.populate([
       { path: 'client', select: 'name email position' },
-      { path: 'products.product', select: 'name description price productImage notes' },
-      { path: 'relatedProducts', select: 'name description price productImage notes' },
-      { path: 'suggestedProducts', select: 'name description price productImage notes' },
+      { path: 'products.product', select: 'name description price' },
       { path: 'createdBy', select: 'name email' }
     ]);
+    await generateAndAttachPDF(quotation);
 
     res.status(201).json({
       message: 'Quotation created successfully',
@@ -154,8 +188,6 @@ const getAllQuotations = async (req, res) => {
       .populate([
         { path: 'client', select: 'name email position' },
         { path: 'products.product', select: 'name description price' },
-        { path: 'relatedProducts', select: 'name description price' },
-        { path: 'suggestedProducts', select: 'name description price' },
         { path: 'createdBy', select: 'name email' }
       ])
       .sort(sort)
@@ -190,8 +222,6 @@ const getQuotationById = async (req, res) => {
       .populate([
         { path: 'client', select: 'name email position' },
         { path: 'products.product', select: 'name description price' },
-        { path: 'relatedProducts', select: 'name description price' },
-        { path: 'suggestedProducts', select: 'name description price' },
         { path: 'createdBy', select: 'name email' }
       ]);
 
@@ -214,8 +244,6 @@ const updateQuotation = async (req, res) => {
       subject,
       formalMessage,
       products,
-      relatedProducts,
-      suggestedProducts,
       machineInstallation,
       notes,
       billingDetails,
@@ -233,32 +261,18 @@ const updateQuotation = async (req, res) => {
       return res.status(404).json({ error: 'Quotation not found' });
     }
 
+    // Remove old PDF if exists
+    if (quotation.pdfFileName) {
+      const oldPath = path.join(__dirname, '../../public/pdfs', quotation.pdfFileName);
+      try { await fs.unlink(oldPath); } catch (e) { /* ignore if not found */ }
+    }
+
     // Validate products exist if being updated
     if (products) {
       for (const product of products) {
         const productExists = await Product.findById(product.product);
         if (!productExists) {
           return res.status(400).json({ error: `Product with ID ${product.product} not found` });
-        }
-      }
-    }
-
-    // Validate related products exist if provided
-    if (relatedProducts && Array.isArray(relatedProducts)) {
-      for (const productId of relatedProducts) {
-        const productExists = await Product.findById(productId);
-        if (!productExists) {
-          return res.status(400).json({ error: `Related product with ID ${productId} not found` });
-        }
-      }
-    }
-
-    // Validate suggested products exist if provided
-    if (suggestedProducts && Array.isArray(suggestedProducts)) {
-      for (const productId of suggestedProducts) {
-        const productExists = await Product.findById(productId);
-        if (!productExists) {
-          return res.status(400).json({ error: `Suggested product with ID ${productId} not found` });
         }
       }
     }
@@ -272,8 +286,6 @@ const updateQuotation = async (req, res) => {
         subject,
         formalMessage,
         products,
-        relatedProducts,
-        suggestedProducts,
         machineInstallation,
         notes,
         billingDetails,
@@ -288,10 +300,10 @@ const updateQuotation = async (req, res) => {
     ).populate([
       { path: 'client', select: 'name email position' },
       { path: 'products.product', select: 'name description price' },
-      { path: 'relatedProducts', select: 'name description price' },
-      { path: 'suggestedProducts', select: 'name description price' },
       { path: 'createdBy', select: 'name email' }
     ]);
+
+    await generateAndAttachPDF(updatedQuotation);
 
     res.json({
       message: 'Quotation updated successfully',
@@ -432,8 +444,6 @@ const getAllQuotationsForAdmin = async (req, res) => {
       .populate([
         { path: 'client', select: 'name email position' },
         { path: 'products.product', select: 'name description price' },
-        { path: 'relatedProducts', select: 'name description price' },
-        { path: 'suggestedProducts', select: 'name description price' },
         { path: 'createdBy', select: 'name email' }
       ])
       .sort(sort)

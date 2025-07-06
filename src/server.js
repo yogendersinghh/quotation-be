@@ -11,14 +11,14 @@ const clientRoutes = require('./routes/clientRoutes');
 const quotationRoutes = require('./routes/quotationRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const modelRoutes = require('./routes/modelRoutes');
-// const pdfRoutes = require('./routes/pdfRoutes');
+const pdfRoutes = require('./routes/pdfRoutes');
 // const { adminJs, router: adminRouter } = require('./admin/admin');
 
 const app = express();
 
 // Set EJS as template engine
-// app.set('view engine', 'ejs');
-// app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 
 // CORS configuration
 const corsOptions = {
@@ -28,6 +28,7 @@ const corsOptions = {
     'http://localhost:3000',
     'http://localhost:3001',
     'http://localhost:5173',
+    'http://localhost:5173/',
     'http://localhost:4173'
   ],
   credentials: true,
@@ -36,6 +37,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+app.options('*', cors(corsOptions)); // Handle CORS preflight for all routes
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -51,6 +53,7 @@ app.use('/api/clients', clientRoutes);
 app.use('/api/quotations', quotationRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/models', modelRoutes);
+app.use('/api/pdf', pdfRoutes);
 
 
 app.get("/",(req,res)=>{

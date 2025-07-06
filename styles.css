@@ -1,0 +1,500 @@
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Roboto', Arial, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #fff;
+    font-size: 14px;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+}
+
+/* Header Section */
+.header {
+    text-align: center;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #2c3e50;
+    padding-bottom: 15px;
+}
+
+.company-tagline {
+    font-size: 16px;
+    font-weight: 500;
+    color: #2c3e50;
+    line-height: 1.4;
+}
+
+/* Main Title */
+.main-title {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.main-title h1 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #2c3e50;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Reference Section */
+.reference-section {
+    margin-bottom: 25px;
+}
+
+.ref-row {
+    display: flex;
+    margin-bottom: 8px;
+}
+
+.ref-label {
+    font-weight: 600;
+    min-width: 80px;
+    color: #2c3e50;
+}
+
+.ref-value {
+    font-weight: 400;
+    color: #333;
+}
+
+/* Recipient Section */
+.recipient-section {
+    margin-bottom: 25px;
+}
+
+.to-label {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 8px;
+}
+
+.recipient-name {
+    font-weight: 600;
+    font-size: 16px;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.recipient-title {
+    font-weight: 500;
+    color: #555;
+    margin-bottom: 4px;
+}
+
+.company-name {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+/* Subject Section */
+.subject-section {
+    margin-bottom: 25px;
+}
+
+.subject-row {
+    display: flex;
+    margin-bottom: 8px;
+}
+
+.subject-label {
+    font-weight: 600;
+    min-width: 60px;
+    color: #2c3e50;
+}
+
+.subject-value {
+    font-weight: 400;
+    color: #333;
+}
+
+/* Letter Section */
+.letter-section {
+    margin-bottom: 30px;
+}
+
+.salutation {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 15px;
+}
+
+.letter-content p {
+    margin-bottom: 12px;
+    text-align: justify;
+    line-height: 1.6;
+}
+
+/* Table Section */
+.table-section {
+    margin-bottom: 25px;
+    overflow-x: auto;
+}
+
+.product-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #ddd;
+    font-size: 12px;
+}
+
+.product-table th {
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    padding: 8px 6px;
+    text-align: center;
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 11px;
+}
+
+.product-table td {
+    border: 1px solid #ddd;
+    padding: 8px 6px;
+    text-align: center;
+    vertical-align: top;
+}
+
+.product-table td:nth-child(1) {
+    text-align: center;
+    font-weight: 600;
+}
+
+.product-table td:nth-child(2) {
+    text-align: left;
+    font-weight: 500;
+}
+
+.product-table td:nth-child(3) {
+    text-align: left;
+    font-size: 11px;
+}
+
+.product-table td:nth-child(4),
+.product-table td:nth-child(5) {
+    text-align: center;
+}
+
+.product-table td:nth-child(6),
+.product-table td:nth-child(7) {
+    text-align: right;
+    font-weight: 500;
+}
+
+/* Total Section */
+.total-section {
+    margin-bottom: 25px;
+    border-top: 2px solid #2c3e50;
+    padding-top: 15px;
+}
+
+.total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.total-label {
+    font-weight: 700;
+    font-size: 16px;
+    color: #2c3e50;
+}
+
+.total-value {
+    font-weight: 700;
+    font-size: 16px;
+    color: #2c3e50;
+}
+
+.note {
+    font-size: 12px;
+    color: #666;
+    font-style: italic;
+}
+
+/* Footer Tagline */
+.footer-tagline {
+    text-align: center;
+    margin: 25px 0;
+    padding: 15px 0;
+    border-top: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+    font-size: 12px;
+    color: #666;
+    font-weight: 500;
+}
+
+/* Company Header Repeat */
+.company-header-repeat {
+    text-align: center;
+    margin: 25px 0;
+    padding: 15px 0;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Notes Section */
+.notes-section {
+    margin-bottom: 25px;
+}
+
+.notes-section h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 12px;
+}
+
+.notes-section ul {
+    list-style-type: disc;
+    margin-left: 20px;
+}
+
+.notes-section li {
+    margin-bottom: 8px;
+    line-height: 1.5;
+}
+
+/* Billing Section */
+.billing-section {
+    margin-bottom: 25px;
+}
+
+.billing-section h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 12px;
+}
+
+.billing-section p {
+    margin-bottom: 12px;
+}
+
+.company-details {
+    margin-left: 20px;
+}
+
+.company-details .company-name {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.company-details .company-address {
+    margin-bottom: 4px;
+}
+
+.company-details .gst-number {
+    font-weight: 500;
+}
+
+/* Payment Section */
+.payment-section {
+    margin-bottom: 25px;
+}
+
+.payment-section h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 12px;
+}
+
+.payment-section ol {
+    margin-left: 20px;
+}
+
+.payment-section li {
+    margin-bottom: 8px;
+    line-height: 1.5;
+}
+
+/* Terms Section */
+.terms-section {
+    margin-bottom: 25px;
+}
+
+.terms-section ol {
+    margin-left: 20px;
+}
+
+.terms-section li {
+    margin-bottom: 8px;
+    line-height: 1.5;
+}
+
+.terms-section ol ol {
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
+
+.terms-section ol ol li {
+    margin-bottom: 6px;
+    font-size: 13px;
+}
+
+/* Warranty Section */
+.warranty-section {
+    margin-bottom: 25px;
+}
+
+.warranty-section ol {
+    margin-left: 20px;
+}
+
+.warranty-section li {
+    margin-bottom: 8px;
+    line-height: 1.5;
+}
+
+.warranty-section ol ol {
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
+
+.warranty-section ol ol li {
+    margin-bottom: 6px;
+    font-size: 13px;
+}
+
+/* Closing Section */
+.closing-section {
+    margin-bottom: 30px;
+}
+
+.closing-section p {
+    margin-bottom: 12px;
+    line-height: 1.6;
+}
+
+/* Signature Section */
+.signature-section {
+    margin-bottom: 30px;
+    margin-top: 40px;
+}
+
+.signature-content {
+    text-align: left;
+}
+
+.signature-line {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 20px;
+}
+
+.signature-name {
+    font-weight: 600;
+    font-size: 16px;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.contact-info {
+    font-weight: 500;
+    color: #555;
+    margin-bottom: 8px;
+}
+
+.attachment {
+    font-size: 12px;
+    color: #666;
+    font-style: italic;
+}
+
+/* Final Footer */
+.final-footer {
+    text-align: center;
+    margin-top: 30px;
+    padding: 15px 0;
+    border-top: 1px solid #ddd;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+    
+    .main-title h1 {
+        font-size: 20px;
+    }
+    
+    .company-tagline {
+        font-size: 14px;
+    }
+    
+    .product-table {
+        font-size: 10px;
+    }
+    
+    .product-table th,
+    .product-table td {
+        padding: 6px 4px;
+    }
+    
+    .ref-row,
+    .subject-row {
+        flex-direction: column;
+    }
+    
+    .ref-label,
+    .subject-label {
+        min-width: auto;
+        margin-bottom: 4px;
+    }
+    
+    .total-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .total-value {
+        margin-top: 4px;
+    }
+}
+
+/* Print Styles */
+@media print {
+    body {
+        font-size: 12px;
+    }
+    
+    .container {
+        max-width: none;
+        padding: 0;
+    }
+    
+    .product-table {
+        font-size: 10px;
+    }
+    
+    .product-table th,
+    .product-table td {
+        padding: 6px 4px;
+    }
+    
+    .footer-tagline,
+    .company-header-repeat,
+    .final-footer {
+        page-break-inside: avoid;
+    }
+    
+    .table-section {
+        page-break-inside: avoid;
+    }
+} 

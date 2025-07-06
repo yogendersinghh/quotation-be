@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Proposal for Industrial Air Cooling - Five Star Technologies</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        background-color: #ffffff;
+      }
+
+      .header {
+        background: white;
+        text-align: left;
+        flex-shrink: 0;
+        padding: 12px 24px !important;
+      }
+
+      .company-name {
+        font-size: 24px;
+        font-weight: bold;
+        color: #2c3e50;
+      }
+
+      .tagline,
+      .contact,
+      .website {
+        font-size: 11px;
+        color: #000000;
+        font-weight: 600;
+      }
+
+      .company-desc {
+        padding: 12px 0 !important;
+        font-size: 13px;
+        color: #000000;
+        padding: 5px 10px;
+        background: #ffffff;
+        font-weight: 600;
+      }
+
+      .document-header {
+        border-radius: 6px;
+        border: 1px solid #000000;
+        background: #ffffff;
+        color: #000000;
+        padding: 4px;
+        text-align: center;
+        flex-shrink: 0;
+      }
+
+      .document-title {
+        font-size: 16px;
+        font-weight: bold;
+      }
+
+      .content {
+        flex: 0.95;
+        padding: 24px 24px !important;
+        overflow-y: auto;
+      }
+
+      .footer {
+        background: white;
+        border-top: 2mm solid #e74c3c;
+        padding: 10mm 20mm;
+        text-align: center;
+        font-size: 11px;
+        color: #7f8c8d;
+        flex-shrink: 0;
+      }
+
+      .footer-company {
+        font-weight: bold;
+        color: #2c3e50;
+        font-size: 12px;
+        margin-bottom: 3px;
+      }
+
+      .footer-tagline {
+        font-size: 9px;
+        color: #95a5a6;
+        margin-bottom: 2px;
+      }
+
+      .footer-services {
+        font-size: 9px;
+        color: #95a5a6;
+      }
+
+      .ref-date {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 15px;
+        font-size: 12px;
+      }
+
+      .ref-date div {
+        background: #ffffff;
+        padding: 6px 0;
+        border-radius: 4px;
+      }
+
+      .recipient {
+        background: #ffffff;
+        margin-bottom: 15px;
+        font-size: 12px;
+      }
+
+      .subject {
+        background: #ffffff;
+        margin-bottom: 24px;
+      }
+
+      .subject strong {
+        color: #000000;
+      }
+
+      .subject .subject-text {
+        font-weight: bold;
+        text-decoration: underline;
+        text-decoration-skip-ink: none;
+        color: #000000;
+        margin-bottom: 12px;
+        font-size: 16px;
+      }
+
+      .intro {
+        margin-bottom: 20px;
+        text-align: justify;
+        font-size: 12px;
+      }
+
+      .intro p {
+        margin-bottom: 10px;
+      }
+
+      .quotation-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 15px 0;
+        background: white;
+        box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+      }
+
+      .quotation-table th {
+        background: #3498db;
+        color: white;
+        padding: 8px 6px;
+        text-align: left;
+        font-weight: bold;
+        font-size: 10px;
+      }
+
+      .quotation-table td {
+        padding: 6px 6px;
+        border-bottom: 1px solid #ddd;
+        font-size: 10px;
+      }
+
+      .product-image {
+        width: 60px;
+        height: 45px;
+        object-fit: cover;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+      }
+
+      .product-cell {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .product-info {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .product-name {
+        font-weight: bold;
+        font-size: 10px;
+      }
+
+      .quotation-table tr:nth-child(even) {
+        background: #f8f9fa;
+      }
+
+      .total-row {
+        background: #2c3e50 !important;
+        color: white;
+        font-weight: bold;
+      }
+
+      .total-row td {
+        border-bottom: none;
+      }
+
+      .currency {
+        font-family: monospace;
+        font-weight: bold;
+      }
+
+      .important-note {
+        text-align: justify;
+        font-size: 12px;
+      }
+
+      .important-note ul li {
+        margin-bottom: 12px;
+      }
+
+      .note {
+        background: #ffffff;
+        margin: 10px 0;
+        border-radius: 4px;
+        font-size: 11px;
+        text-decoration: underline;
+      }
+
+      .section-title {
+        background: #34495e;
+        color: white;
+        padding: 8px 12px;
+        margin: 15px 0 10px 0;
+        font-weight: bold;
+        font-size: 12px;
+      }
+
+      .billing-info {
+        background: #f8f9fa;
+        padding: 12px;
+        border-radius: 4px;
+        margin: 10px 0;
+        font-size: 11px;
+      }
+
+      .terms-list {
+        text-align: justify;
+        font-size: 12px;
+      }
+
+      .sub-terms {
+        margin-top: 8px;
+        padding-left: 15px;
+      }
+
+      .sub-terms > div {
+        margin-bottom: 6px;
+        position: relative;
+        padding-left: 12px;
+        font-size: 10px;
+      }
+
+      .sub-terms > div::before {
+        content: "•";
+        position: absolute;
+        left: 0;
+        color: #3498db;
+        font-weight: bold;
+      }
+
+      .important-note,
+      .billing,
+      .terms {
+        margin-top: 48px;
+      }
+
+      .signature {
+        margin-top: 20px;
+        text-align: left;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 4px;
+        font-size: 11px;
+      }
+
+      .signature-line {
+        margin-top: 30px;
+        border-top: 1px solid #333;
+        width: 150px;
+        padding-top: 8px;
+      }
+
+      @media print {
+        @page {
+          margin: 40mm 20mm;
+        }
+
+        @page {
+          @top-center {
+            content: element(header);
+          }
+          @bottom-center {
+            content: element(footer);
+          }
+        }
+
+        body {
+          margin: 0;
+          padding: 0;
+          background: white;
+        }
+
+        .header {
+          position: running(header);
+        }
+
+        .footer {
+          position: running(footer);
+        }
+      }
+
+
+      @media (max-width: 768px) {
+        .content {
+          padding: 10mm;
+        }
+
+        .header {
+          padding: 10mm;
+        }
+
+        .footer {
+          padding: 10mm;
+        }
+
+        .quotation-table {
+          font-size: 9px;
+        }
+
+        .quotation-table th,
+        .quotation-table td {
+          padding: 4px 3px;
+        }
+
+        .ref-date {
+          flex-direction: column;
+          gap: 8px;
+        }
+      }
+
+      .header {
+  background: white;
+  padding: 12px 24px 0 24px !important;
+}
+.header-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+}
+.logo-col {
+  flex: 0 0 80px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+.company-logo {
+  width: 60px;
+  height: auto;
+  margin-top: 2px;
+}
+.info-col {
+  flex: 1;
+}
+.company-name {
+  font-size: 24px;
+  font-weight: bold;
+  color: #222;
+  margin-bottom: 2px;
+}
+.contact-details {
+  font-size: 8px;
+  color: #111;
+  margin-bottom: 2px;
+}
+.company-desc {
+  font-size: 10px;
+  color: #003366;
+  font-weight: bold;
+  margin-top: 8px;
+  margin-bottom: 0;
+  letter-spacing: 0.5px;
+}
+    </style>
+  </head>
+  <body>
+    <!-- Page 1 -->
+    <div class="page">
+      <div class="content">
+        <div class="document-header">
+          <div class="document-title">PROPOSAL FOR <%= quotation.title %></div>
+        </div>
+
+        <div class="proposal-details">
+          <div class="ref-date">
+            <div><strong>Ref.No.:</strong> <%= quotation.quotationRefNumber || 'FST/VENTILATION/34/2037/COOLING' %></div>
+            <div><strong>Date:</strong> <%= quotation.createdAt ? new Date(quotation.createdAt).toLocaleDateString('en-GB') : '25.04.2025' %></div>
+          </div>
+
+          <div class="recipient">
+            <strong>To:</strong><br />
+            <%= client ? client.name : 'Mr. Atul Kale' %><br />
+            <%= client ? client.position : 'General Manager-Projects' %><br />
+            <%= client ? client.companyName : 'Bansal Wire Industries Ltd.' %>
+            <%= client.address %> <br/>
+            <%= client.city %> <%= client.PIN %> <br/>
+          </div>
+
+                      <div class="subject">
+            <div class="subject-text">
+              <strong>Subject:</strong> <%= quotation.subject || 'Quotation for Supply & Installation of Air-cooling System' %><br />
+            </div>
+
+            <!-- <div class="area"><strong>Formal Message:</strong> <%= quotation.formalMessage || 'We are pleased to submit our proposal for your consideration.' %></div> -->
+          </div>
+
+          <div class="intro">
+            <span><strong>Dear Sir,</strong></span>
+            <p>
+              <%= quotation.formalMessage || 'With reference to your requirement for Air Cooling, we are pleased to submit our proposal for supply & installation of Symphony Industrial / Commercial Air Coolers. The quotation is for supply of Symphony Natural Air-Cooling solution which delivers continuous fresh, filtered & cool air. Based on your cooling requirement we have calculated the cooling solution as follows:' %>
+            </p>
+          </div>
+
+          <table class="quotation-table">
+            <thead>
+              <tr>
+                <th>Sr. No</th>
+                <th>Product Name</th>
+                <th>Model</th>
+                <th>Features</th>
+                <th>Qty</th>
+                <th>Unit Price</th>
+                <th>Total Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (quotation.products && quotation.products.length > 0) { %>
+                <% quotation.products.forEach((item, index) => { %>
+                  <% console.log('Product Item:', JSON.stringify(item, null, 2)); %>
+                  <tr>
+                    <td><%= index + 1 %></td>
+                    <td><%= item.product ? item.product.title : 'Product' %></td>
+                    <td>
+                      <div class="product-cell">
+                        <% if (item.product && item.product.productImage) { %>
+                          <img src="<%= BASE_URL %>/public/products/<%= item.product.productImage %>" alt="<%= item.product.name %>" class="product-image">
+                        <% } else { %>
+                          <img src="https://via.placeholder.com/80x60/3498db/ffffff?text=<%= item.product ? item.product.name : 'Product' %>" alt="<%= item.product ? item.product.name : 'Product' %>" class="product-image">
+                        <% } %>
+                        <div class="product-info">
+                          <% if (item.product && item.product.model) { %>
+                            <span style="font-size: 9px; color: #666;"><%= item.product.model.name %></span>
+                          <% } %>
+                        </div>
+                      </div>
+                    </td>
+                    <td><%= item.product ? item.product.features || '-' : '-' %></td>
+                    <td><%= item.quantity %> <%= item.unit || 'Nos' %></td>
+                    <td class="currency">₹ <%= item.price || '0' %></td>
+                    <td class="currency">₹ <%= (item.quantity * (item.price || 0)).toLocaleString('en-IN') %></td>
+                  </tr>
+                <% }); %>
+              <% } else { %>
+                <!-- Fallback static content if no products -->
+                <tr>
+                  <td>1</td>
+                  <td>PAC 20U</td>
+                  <td>
+                    <div class="product-cell">
+                      <img src="https://via.placeholder.com/80x60/3498db/ffffff?text=PAC+20U" alt="PAC 20U Air Cooler" class="product-image">
+                      <div class="product-info">
+                        <span style="font-size: 9px; color: #666;">Industrial Air Cooler</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>11,000 cfm @ 1.1kw</td>
+                  <td>3 Nos</td>
+                  <td class="currency">₹ 95,000</td>
+                  <td class="currency">₹ 285,000</td>
+                </tr>
+              <% } %>
+              <tr class="total-row">
+                <td colspan="6"><strong>(A) Total Amount</strong></td>
+                <td class="currency"><strong>₹ <%= quotation.totalAmount ? quotation.totalAmount.toLocaleString('en-IN') : '4,07,150' %></strong></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="note"><strong>Note:</strong> GST & Freight Extra</div>
+        </div>
+
+        <div class="important-note">
+          <div class="section-title">Important Notes</div>
+          <% if (quotation.notes && quotation.notes.trim() !== '') { %>
+            <div style="margin-left: 20px; text-align: justify; font-size: 12px;">
+              <%= quotation.notes %>
+            </div>
+          <% } else { %>
+            <ul style="margin-left: 20px">
+              <li>
+                Recommended water supply should be less than 400 TDS. All electrical
+                work under customer scope.
+              </li>
+              <li>
+                Size of wire suitable to ampere rating of the motor which shall be
+                selected by qualified Electrician of the customer.
+              </li>
+              <li>
+                Use single phase preventer for all three phase machines, Spike
+                buster for all machines & Voltage stabilizer where voltage
+                fluctuates more than 5%.
+              </li>
+              <li>Any change in quantity shall be charged extra.</li>
+              <li>
+                Any kind of charges / scope of work which is not specified in above,
+                will be extra as per actual.
+              </li>
+            </ul>
+          <% } %>
+        </div>
+
+        <div class="billing">
+          <div class="section-title">Billing Point</div>
+          <div class="billing-info">
+            <strong>Material will be billed through</strong><br />
+            <%= quotation.billingDetails || 'C-165, SECTOR-10, NOIDA - 201301' %>
+          </div>
+        </div>
+
+                <div class="terms">
+          <div class="section-title">Terms & Conditions</div>
+          <div class="terms-list">
+            <div>
+              <strong>Supply</strong> - <%= quotation.supply || '100% with the purchase order for supply of Symphony coolers & accessories' %><br />
+              <strong>I&C</strong> - <%= quotation.installationAndCommissioning || '50% at the start & 50% after commissioning of units' %>.
+            </div>
+            <% if (quotation.termsAndConditions && quotation.termsAndConditions.trim() !== '') { %>
+              <%= quotation.termsAndConditions %>
+            <% } else { %>
+              <div>
+                Transportation & handling for Symphony coolers, accessories & all
+                material used for low side will be extra at actuals.
+              </div>
+              <div>
+                For Packaged Air Coolers (PAC) range and accessories the delivery
+                period shall be 1-2 weeks from date of receipt of order along-with
+                100% payment. For Central Air-Cooling System (CAS) range, delivery
+                time will be 12-14 weeks after receipt of order along-with 100%
+                payment.
+              </div>
+              <div>
+                The specifications quoted & the catalogues are subject to change
+                without any prior notice.
+              </div>
+              <div>
+                Any change in Government levies would be charged accordingly.
+              </div>
+              <div>
+                All disputes for Symphony products are subject to Ahmedabad, Gujarat
+                Jurisdiction only.
+              </div>
+            <% } %>
+          </div>
+        </div>
+        <div class="signature">
+          <p>
+            We are confident that the quotation will meet your requirements and
+            look forward for your valued order.
+          </p>
+          <p><strong>Thanking you.</strong></p>
+          <p><strong>Yours truly</strong></p>
+          <div class="signature-line">
+            <strong><%= user ? user.name : 'Sumit Verma' %></strong><br />
+            <strong>(M) <%= user ? user.phone : '9810685715' %></strong>
+          </div>
+          <p style="margin-top: 20px"><strong>Attached: Brochure</strong></p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html> 
