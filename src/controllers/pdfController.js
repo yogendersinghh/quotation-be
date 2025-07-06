@@ -56,7 +56,7 @@ const generateQuotationPDF = asyncHandler(async (req, res) => {
         const headerTemplate = `
           <div style="width:100%;padding:0 16px;box-sizing:border-box;">
             <div style="display:flex;align-items:flex-start;gap:10px;">
-              <img src='https://via.placeholder.com/40x40/ff9900/ffffff?text=LOGO' style='width:40px;height:auto;margin:0;'>
+            //   <img src='https://via.placeholder.com/40x40/ff9900/ffffff?text=LOGO' style='width:40px;height:auto;margin:0;'>
               <div>
                 <div style='font-size:18px;font-weight:bold;color:#222;'>FIVE STAR TECHNOLOGIES</div>
                 <div style='font-size:10px;color:#111;'>

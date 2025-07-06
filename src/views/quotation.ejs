@@ -446,7 +446,6 @@
             <tbody>
               <% if (quotation.products && quotation.products.length > 0) { %>
                 <% quotation.products.forEach((item, index) => { %>
-                  <% console.log('Product Item:', JSON.stringify(item, null, 2)); %>
                   <tr>
                     <td><%= index + 1 %></td>
                     <td><%= item.product ? item.product.title : 'Product' %></td>
@@ -466,10 +465,22 @@
                     </td>
                     <td><%= item.product ? item.product.features || '-' : '-' %></td>
                     <td><%= item.quantity %> <%= item.unit || 'Nos' %></td>
-                    <td class="currency">₹ <%= item.price || '0' %></td>
-                    <td class="currency">₹ <%= (item.quantity * (item.price || 0)).toLocaleString('en-IN') %></td>
+                    <td class="currency">₹ <%= item.product.price || '0' %></td>
+                    <td class="currency">₹ <%= (item.quantity * (item.product.price || 0)).toLocaleString('en-IN') %></td>
                   </tr>
                 <% }); %>
+
+                <% if (quotation.machineInstallation) { %>
+                  <tr>
+                    <td><%= (quotation.products ? quotation.products.length : 0) + 1 %></td>
+                    <td>Machine Installation</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td><%= quotation.machineInstallation.quantity || '-' %> <%= quotation.machineInstallation.unit || '-' %></td>
+                    <td class="currency">₹ <%= quotation.machineInstallation.price || '-' %></td>
+                    <td class="currency">₹ <%= quotation.machineInstallation.total ? quotation.machineInstallation.total.toLocaleString('en-IN') : '-' %></td>
+                  </tr>
+                <% } %>
               <% } else { %>
                 <!-- Fallback static content if no products -->
                 <tr>
