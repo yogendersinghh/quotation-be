@@ -12,6 +12,7 @@ const quotationRoutes = require('./routes/quotationRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const modelRoutes = require('./routes/modelRoutes');
 const pdfRoutes = require('./routes/pdfRoutes');
+const defaultMessageRoutes = require('./routes/defaultMessageRoutes');
 // const { adminJs, router: adminRouter } = require('./admin/admin');
 
 const app = express();
@@ -54,6 +55,7 @@ app.use('/api/quotations', quotationRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/models', modelRoutes);
 app.use('/api/pdf', pdfRoutes);
+app.use('/api/default-messages', defaultMessageRoutes);
 
 
 app.get("/",(req,res)=>{
