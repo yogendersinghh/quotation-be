@@ -1,4 +1,5 @@
 const upload = require('../middleware/upload');
+const multer = require("multer")
 
 // Handle single image upload
 const uploadImage = (req, res) => {
