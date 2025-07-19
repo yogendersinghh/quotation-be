@@ -104,6 +104,14 @@ const quotationSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+  relatedProducts: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Product'
+  }],
+  suggestedProducts: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Product'
+  }],
   status: {
     type: String,
     enum: ['draft', 'accepted', 'rejected'],

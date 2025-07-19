@@ -4,6 +4,7 @@ const puppeteer = require('puppeteer');
 const ejs = require('ejs');
 const path = require('path');
 const fs = require('fs').promises;
+const Client = require('../models/Client'); // Added import for Client model
 
 // Utility to generate and attach PDF
 async function generateAndAttachPDF(quotation) {
@@ -11,6 +12,8 @@ async function generateAndAttachPDF(quotation) {
   await quotation.populate([
     { path: 'client' },
     { path: 'products.product', populate: { path: 'model', model: 'Model' } },
+    { path: 'relatedProducts', select: 'title image description price productImage name' },
+    { path: 'suggestedProducts', select: 'title image description price productImage name' },
     { path: 'createdBy' }
   ]);
   const templatePath = path.join(__dirname, '../views/quotation.ejs');
@@ -75,7 +78,9 @@ const createQuotation = async (req, res) => {
       installationAndCommissioning,
       termsAndConditions,
       signatureImage,
-      totalAmount
+      totalAmount,
+      relatedProducts,
+      suggestedProducts
     } = req.body;
 
     // Validate products exist
@@ -100,6 +105,8 @@ const createQuotation = async (req, res) => {
       termsAndConditions,
       signatureImage,
       totalAmount,
+      relatedProducts,
+      suggestedProducts,
       createdBy: req.user._id
     });
 
@@ -107,10 +114,11 @@ const createQuotation = async (req, res) => {
     await quotation.populate([
       { path: 'client', select: 'name email position' },
       { path: 'products.product', select: 'name description price' },
+      { path: 'relatedProducts', select: 'title image description price productImage name' },
+      { path: 'suggestedProducts', select: 'title image description price productImage name' },
       { path: 'createdBy', select: 'name email' }
     ]);
     await generateAndAttachPDF(quotation);
-
     res.status(201).json({
       message: 'Quotation created successfully',
       quotation
@@ -130,22 +138,34 @@ const getAllQuotations = async (req, res) => {
       converted,
       status,
       userId,
-      search
+      search,
+      companyName
     } = req.query;
 
-    // Build filter object - always scope to current user
-    const filter = {
-      createdBy: userId
-    };
+    // Build filter object
+    const filter = {};
+    if (userId) {
+      filter.createdBy = userId;
+    }
 
     // Add search filter if provided
     if (search) {
-      filter.title = { $regex: search, $options: 'i' };
+      filter.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { subject: { $regex: search, $options: 'i' } }
+      ];
     }
 
     // Add client filter if provided
     if (client) {
       filter.client = client;
+    }
+
+    // Add companyName filter if provided
+    if (companyName) {
+      const clientDocs = await Client.find({ companyName: companyName }).select('_id');
+      const clientIds = clientDocs.map(c => c._id);
+      filter.client = { $in: clientIds };
     }
 
     // Add fromMonth filter if provided
@@ -206,7 +226,8 @@ const getAllQuotations = async (req, res) => {
         month,
         converted,
         status,
-        search
+        search,
+        companyName
       }
     });
   } catch (error) {
@@ -251,7 +272,9 @@ const updateQuotation = async (req, res) => {
       termsAndConditions,
       signatureImage,
       totalAmount,
-      converted
+      converted,
+      relatedProducts,
+      suggestedProducts
     } = req.body;
 
     // Check if quotation exists
@@ -259,54 +282,40 @@ const updateQuotation = async (req, res) => {
     if (!quotation) {
       return res.status(404).json({ error: 'Quotation not found' });
     }
-
     // Remove old PDF if exists
     if (quotation.pdfFileName) {
       const oldPath = path.join(__dirname, '../../public/pdfs', quotation.pdfFileName);
       try { await fs.unlink(oldPath); } catch (e) { /* ignore if not found */ }
     }
-
-    // Validate products exist if being updated
-    if (products) {
-      for (const product of products) {
-        const productExists = await Product.findById(product.product);
-        if (!productExists) {
-          return res.status(400).json({ error: `Product with ID ${product.product} not found` });
-        }
-      }
-    }
-
-    // Update quotation
-    const updatedQuotation = await Quotation.findByIdAndUpdate(
-      req.params.id,
-      {
-        title,
-        client,
-        subject,
-        formalMessage,
-        products,
-        machineInstallation,
-        notes,
-        billingDetails,
-        supply,
-        installationAndCommissioning,
-        termsAndConditions,
-        signatureImage,
-        totalAmount,
-        converted
-      },
-      { new: true }
-    ).populate([
+    // Update fields
+    quotation.title = title;
+    quotation.client = client;
+    quotation.subject = subject;
+    quotation.formalMessage = formalMessage;
+    quotation.products = products;
+    quotation.machineInstallation = machineInstallation;
+    quotation.notes = notes;
+    quotation.billingDetails = billingDetails;
+    quotation.supply = supply;
+    quotation.installationAndCommissioning = installationAndCommissioning;
+    quotation.termsAndConditions = termsAndConditions;
+    quotation.signatureImage = signatureImage;
+    quotation.totalAmount = totalAmount;
+    quotation.converted = converted;
+    quotation.relatedProducts = relatedProducts;
+    quotation.suggestedProducts = suggestedProducts;
+    await quotation.save();
+    await quotation.populate([
       { path: 'client', select: 'name email position' },
       { path: 'products.product', select: 'name description price' },
+      { path: 'relatedProducts', select: 'title image description price productImage name' },
+      { path: 'suggestedProducts', select: 'title image description price productImage name' },
       { path: 'createdBy', select: 'name email' }
     ]);
-
-    await generateAndAttachPDF(updatedQuotation);
-
+    await generateAndAttachPDF(quotation);
     res.json({
       message: 'Quotation updated successfully',
-      quotation: updatedQuotation
+      quotation
     });
   } catch (error) {
     res.status(400).json({ error: error.message });

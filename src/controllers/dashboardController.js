@@ -6,56 +6,57 @@ const getDashboardStatistics = async (req, res) => {
   try {
     const { userId } = req.body;
 
-    if (!userId) {
-      return res.status(400).json({
-        success: false,
-        message: 'User ID is required in the request payload'
-      });
+    let user = null;
+    let filter = {};
+
+    if (userId) {
+      // Verify if the user exists
+      user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'User not found'
+        });
+      }
+      filter.createdBy = userId;
     }
 
-    // Verify if the user exists
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found'
-      });
-    }
+    // Get total quotations (filtered by user if userId is present)
+    const totalQuotations = await Quotation.countDocuments(filter);
 
-    // Get total quotations for specified user
-    const totalQuotations = await Quotation.countDocuments({ createdBy: userId });
-
-    // Get quotations pending admin approval (status is 'draft') for specified user
+    // Get quotations pending admin approval (status is 'draft')
     const pendingApproval = await Quotation.countDocuments({ 
-      createdBy: userId,
+      ...filter,
       status: 'draft'
     });
 
-    // Get clients created by specified user
-    const clientsCreated = await Client.countDocuments({ createdBy: userId });
+    // Get clients created (filtered by user if userId is present)
+    const clientsCreated = await Client.countDocuments(filter);
 
-    // Get quotations by conversion status for specified user
+    // Get quotations by conversion status
     const underDevelopment = await Quotation.countDocuments({ 
-      createdBy: userId,
+      ...filter,
       converted: 'Under Development'
     });
     const booked = await Quotation.countDocuments({ 
-      createdBy: userId,
+      ...filter,
       converted: 'Booked'
     });
     const lost = await Quotation.countDocuments({ 
-      createdBy: userId,
+      ...filter,
       converted: 'Lost'
     });
 
     res.json({
       success: true,
       data: {
-        user: {
-          id: user._id,
-          name: user.name,
-          email: user.email
-        },
+        user: user
+          ? {
+              id: user._id,
+              name: user.name,
+              email: user.email
+            }
+          : null,
         totalQuotations,
         pendingApproval,
         clientsCreated,

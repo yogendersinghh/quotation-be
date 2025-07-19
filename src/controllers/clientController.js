@@ -215,10 +215,21 @@ const deleteClient = async (req, res) => {
   }
 };
 
+// Get all unique company names
+const getAllCompanyNames = async (req, res) => {
+  try {
+    const companyNames = await Client.distinct('companyName');
+    res.json({ companyNames });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   createClient,
   getAllClients,
   getClientById,
   updateClient,
-  deleteClient
+  deleteClient,
+  getAllCompanyNames // Export the new controller
 }; 
