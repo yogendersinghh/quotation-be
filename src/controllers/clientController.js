@@ -4,59 +4,74 @@ const Client = require('../models/Client');
 const createClient = async (req, res) => {
   try {
     const { 
-      name, 
-      email, 
-      position, 
+      users, // Array of user objects
       address, 
       place,
       city,
       state,
       PIN,
-      phone, 
       companyName 
     } = req.body;
 
-    // Validate that email is an array and has at least one email
-    if (!Array.isArray(email) || email.length === 0) {
-      return res.status(400).json({ error: 'At least one email is required' });
+    // Validate users array
+    if (!Array.isArray(users) || users.length === 0) {
+      return res.status(400).json({ error: 'Users array is required and cannot be empty' });
     }
-
-    // Validate that phone is an array and has at least one number
-    if (!Array.isArray(phone) || phone.length === 0) {
-      return res.status(400).json({ error: 'At least one mobile number is required' });
-    }
-
-    // Check if any client with any of the provided emails already exists
-    const existingClient = await Client.findOne({ 
-      email: { $in: email } 
-    });
-    if (existingClient) {
-      return res.status(400).json({ error: 'Client with one of these emails already exists' });
-    }
-
     if (!companyName) {
       return res.status(400).json({ error: 'Company name is required' });
     }
 
-    const client = new Client({
-      name,
-      email,
-      position,
+    // Collect all emails and phones from all users for duplicate check
+    let allEmails = [];
+    let allPhones = [];
+    for (const user of users) {
+      if (!user.name) {
+        return res.status(400).json({ error: 'Each user must have a name' });
+      }
+      if (!Array.isArray(user.email) || user.email.length === 0) {
+        return res.status(400).json({ error: `User ${user.name} must have at least one email (as array)` });
+      }
+      if (!Array.isArray(user.phone) || user.phone.length === 0) {
+        return res.status(400).json({ error: `User ${user.name} must have at least one phone number (as array)` });
+      }
+      if (!user.position) {
+        return res.status(400).json({ error: `User ${user.name} must have a position` });
+      }
+      allEmails = allEmails.concat(user.email);
+      allPhones = allPhones.concat(user.phone);
+    }
+
+    // Check for existing clients with any of the provided emails or phone numbers
+    const existingClient = await Client.findOne({ 
+      $or: [
+        { email: { $in: allEmails } },
+        { phone: { $in: allPhones } }
+      ]
+    });
+    if (existingClient) {
+      return res.status(400).json({ error: 'A client with one of these emails or phone numbers already exists' });
+    }
+
+    // Create client documents
+    const clientsToCreate = users.map(user => ({
+      name: user.name,
+      email: user.email, // array
+      position: user.position,
       address,
       place,
       city,
       state,
       PIN,
-      phone,
+      phone: user.phone, // array
       companyName,
       createdBy: req.user._id
-    });
+    }));
 
-    await client.save();
+    const createdClients = await Client.insertMany(clientsToCreate);
 
     res.status(201).json({
-      message: 'Client created successfully',
-      client
+      message: 'Clients created successfully',
+      clients: createdClients
     });
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -77,8 +92,8 @@ const getAllClients = async (req, res) => {
     if (search) {
       filter.$or = [
         { name: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } },
-        { phone: { $regex: search, $options: 'i' } },
+        { email: { $elemMatch: { $regex: search, $options: 'i' } } },
+        { phone: { $elemMatch: { $regex: search, $options: 'i' } } },
         { companyName: { $regex: search, $options: 'i' } },
         { address: { $regex: search, $options: 'i' } },
         { place: { $regex: search, $options: 'i' } },
@@ -154,12 +169,12 @@ const updateClient = async (req, res) => {
 
     // Validate that email is an array and has at least one email if provided
     if (email && (!Array.isArray(email) || email.length === 0)) {
-      return res.status(400).json({ error: 'At least one email is required' });
+      return res.status(400).json({ error: 'At least one email is required (as array)' });
     }
 
     // Validate that phone is an array and has at least one number if provided
     if (phone && (!Array.isArray(phone) || phone.length === 0)) {
-      return res.status(400).json({ error: 'At least one mobile number is required' });
+      return res.status(400).json({ error: 'At least one mobile number is required (as array)' });
     }
 
     // Check if any of the new emails are already in use by other clients
