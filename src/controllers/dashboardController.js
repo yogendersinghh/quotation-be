@@ -24,6 +24,10 @@ const getDashboardStatistics = async (req, res) => {
     // Get total quotations (filtered by user if userId is present)
     const totalQuotations = await Quotation.countDocuments(filter);
 
+    // Get total unique clients that have at least one quotation (filtered by user if userId is present)
+    const engagedClients = await Quotation.distinct('client', filter);
+    const totalEngagedClients = engagedClients.length;
+
     // Get quotations pending admin approval (status is 'draft')
     const pendingApproval = await Quotation.countDocuments({ 
       ...filter,
@@ -60,6 +64,7 @@ const getDashboardStatistics = async (req, res) => {
         totalQuotations,
         pendingApproval,
         clientsCreated,
+        totalEngagedClients,
         conversionStats: {
           underDevelopment,
           booked,

@@ -8,6 +8,7 @@ const createProduct = async (req, res) => {
       productImage, 
       title, 
       model, 
+      make,
       type, 
       features, 
       price, 
@@ -17,7 +18,9 @@ const createProduct = async (req, res) => {
       termsAndCondition,
       categories, 
       notes, 
-      description 
+      description,
+      dataSheet,
+      catalog
     } = req.body;
 
     // Validate model exists
@@ -39,6 +42,7 @@ const createProduct = async (req, res) => {
       productImage,
       title,
       model,
+      make,
       type,
       features,
       price,
@@ -48,7 +52,9 @@ const createProduct = async (req, res) => {
       termsAndCondition,
       categories,
       notes,
-      description
+      description,
+      dataSheet,
+      catalog
     });
 
     await product.save();
@@ -133,6 +139,7 @@ const updateProduct = async (req, res) => {
       productImage, 
       title, 
       model, 
+      make,
       type, 
       features, 
       price, 
@@ -142,7 +149,9 @@ const updateProduct = async (req, res) => {
       termsAndCondition,
       categories, 
       notes, 
-      description 
+      description,
+      dataSheet,
+      catalog
     } = req.body;
     const productId = req.params.id;
 
@@ -177,6 +186,7 @@ const updateProduct = async (req, res) => {
         productImage,
         title,
         model,
+        make,
         type,
         features,
         price,
@@ -186,7 +196,9 @@ const updateProduct = async (req, res) => {
         termsAndCondition,
         categories,
         notes,
-        description
+        description,
+        dataSheet,
+        catalog
       },
       { new: true, runValidators: true }
     ).populate([

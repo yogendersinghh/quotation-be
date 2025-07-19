@@ -34,6 +34,28 @@ const uploadSignature = (req, res) => {
   }
 };
 
+// Handle data sheet or catalog upload
+const uploadDataSheetOrCatalog = (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+    const { type } = req.body; // type should be 'datasheet' or 'catalog'
+    if (!type || !['datasheet', 'catalog'].includes(type)) {
+      return res.status(400).json({ error: 'Invalid type. Must be "datasheet" or "catalog".' });
+    }
+    // The file should be stored in the correct folder by the upload middleware
+    // Respond with the filename
+    res.json({
+      message: `${type.charAt(0).toUpperCase() + type.slice(1)} uploaded successfully`,
+      filename: req.file.filename,
+      path: `/${type}/${req.file.filename}`
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 // Error handling middleware for multer
 const handleUploadError = (error, req, res, next) => {
   if (error instanceof multer.MulterError) {
@@ -49,5 +71,6 @@ module.exports = {
   uploadImage,
   uploadSignature,
   handleUploadError,
-  upload
+  upload,
+  uploadDataSheetOrCatalog
 }; 

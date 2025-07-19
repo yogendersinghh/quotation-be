@@ -11,9 +11,25 @@ const productSchema = new mongoose.Schema({
     trim: true
   },
   model: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Model',
+    type: String,
     required: true
+  },
+  make: {
+    type: String,
+    required: true
+  },
+  quality: {
+    type: String,
+    enum: ['economy', 'standard', 'premium', 'super premium'],
+    required: true
+  },
+  dataSheet: {
+    type: String,
+    trim: true
+  },
+  catalog: {
+    type: String,
+    trim: true
   },
   type: {
     type: String,
@@ -31,10 +47,6 @@ const productSchema = new mongoose.Schema({
   warranty: {
     type: String,
     required: true
-  },
-  quality: {
-    type: String,
-    trim: true
   },
   specification: {
     type: String,
