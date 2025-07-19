@@ -157,15 +157,23 @@ const getAllQuotations = async (req, res) => {
     }
 
     // Add client filter if provided
-    if (client) {
-      filter.client = client;
-    }
-
-    // Add companyName filter if provided
     if (companyName) {
       const clientDocs = await Client.find({ companyName: companyName }).select('_id');
-      const clientIds = clientDocs.map(c => c._id);
-      filter.client = { $in: clientIds };
+      const clientIds = clientDocs.map(c => c._id.toString());
+
+      if (client) {
+        // Check if the client is in the company
+        if (clientIds.includes(client)) {
+          filter.client = client;
+        } else {
+          // No matching client for this company, return empty result or error
+          return res.json({ quotations: [], message: 'Selected client does not belong to the specified company.' });
+        }
+      } else {
+        filter.client = { $in: clientIds };
+      }
+    } else if (client) {
+      filter.client = client;
     }
 
     // Add fromMonth filter if provided
