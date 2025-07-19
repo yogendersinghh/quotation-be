@@ -10,7 +10,7 @@ const Client = require('../models/Client'); // Added import for Client model
 async function generateAndAttachPDF(quotation) {
   // Repopulate for fresh data
   await quotation.populate([
-    { path: 'client' },
+    { path: 'client', select: 'name email position phone' },
     { path: 'products.product', populate: { path: 'model', model: 'Model' } },
     { path: 'relatedProducts', select: 'title image description price productImage name' },
     { path: 'suggestedProducts', select: 'title image description price productImage name' },
@@ -70,33 +70,7 @@ const createQuotation = async (req, res) => {
       client,
       subject,
       formalMessage,
-      products,
-      machineInstallation,
-      notes,
-      billingDetails,
-      supply,
-      installationAndCommissioning,
-      termsAndConditions,
-      signatureImage,
-      totalAmount,
-      relatedProducts,
-      suggestedProducts
-    } = req.body;
-
-    // Validate products exist
-    for (const product of products) {
-      const productExists = await Product.findById(product.product);
-      if (!productExists) {
-        return res.status(400).json({ error: `Product with ID ${product.product} not found` });
-      }
-    }
-
-    const quotation = new Quotation({
-      title,
-      client,
-      subject,
-      formalMessage,
-      products,
+      products, // Array of product objects with details
       machineInstallation,
       notes,
       billingDetails,
@@ -107,12 +81,51 @@ const createQuotation = async (req, res) => {
       totalAmount,
       relatedProducts,
       suggestedProducts,
+      GST // <-- Add GST here
+    } = req.body;
+
+    // Validate products exist and required fields
+    if (!Array.isArray(products) || products.length === 0) {
+      return res.status(400).json({ error: 'At least one product is required' });
+    }
+    for (const product of products) {
+      if (!product.product) {
+        return res.status(400).json({ error: 'Product ID is required for each product' });
+      }
+      if (!product.title || !product.make || !product.model || product.qty == null || product.unitPrice == null || product.totalAmount == null) {
+        return res.status(400).json({ error: 'Each product must have title, make, model, qty, unitPrice, and totalAmount' });
+      }
+      // Validate product exists
+      const productExists = await Product.findById(product.product);
+      if (!productExists) {
+        return res.status(400).json({ error: `Product with ID ${product.product} not found` });
+      }
+    }
+
+    // Store all product details in the quotation
+    const quotation = new Quotation({
+      title,
+      client,
+      subject,
+      formalMessage,
+      products, // Store the array of product objects as received
+      machineInstallation,
+      notes,
+      billingDetails,
+      supply,
+      installationAndCommissioning,
+      termsAndConditions,
+      signatureImage,
+      totalAmount,
+      relatedProducts,
+      suggestedProducts,
+      GST, // <-- Store GST
       createdBy: req.user._id
     });
 
     await quotation.save();
     await quotation.populate([
-      { path: 'client', select: 'name email position' },
+      { path: 'client', select: 'name email position phone' },
       { path: 'products.product', select: 'name description price' },
       { path: 'relatedProducts', select: 'title image description price productImage name' },
       { path: 'suggestedProducts', select: 'title image description price productImage name' },
@@ -213,7 +226,7 @@ const getAllQuotations = async (req, res) => {
     // Get paginated quotations with filters
     const quotations = await Quotation.find(filter)
       .populate([
-        { path: 'client', select: 'name email position' },
+        { path: 'client', select: 'name email position phone' },
         { path: 'products.product', select: 'name description price' },
         { path: 'createdBy', select: 'name email' }
       ])
@@ -248,7 +261,7 @@ const getQuotationById = async (req, res) => {
   try {
     const quotation = await Quotation.findById(req.params.id)
       .populate([
-        { path: 'client', select: 'name email position' },
+        { path: 'client', select: 'name email position phone' },
         { path: 'products.product', select: 'name description price' },
         { path: 'createdBy', select: 'name email' }
       ]);
@@ -314,7 +327,7 @@ const updateQuotation = async (req, res) => {
     quotation.suggestedProducts = suggestedProducts;
     await quotation.save();
     await quotation.populate([
-      { path: 'client', select: 'name email position' },
+      { path: 'client', select: 'name email position phone' },
       { path: 'products.product', select: 'name description price' },
       { path: 'relatedProducts', select: 'title image description price productImage name' },
       { path: 'suggestedProducts', select: 'title image description price productImage name' },
@@ -379,7 +392,7 @@ const updateQuotationStatus = async (req, res) => {
       { status: newStatus },
       { new: true }
     ).populate([
-      { path: 'client', select: 'name email position' },
+      { path: 'client', select: 'name email position phone' },
       { path: 'products.product', select: 'name description price' },
       { path: 'createdBy', select: 'name email' }
     ]);
@@ -458,7 +471,7 @@ const getAllQuotationsForAdmin = async (req, res) => {
     // Get paginated quotations with filters
     const quotations = await Quotation.find(filter)
       .populate([
-        { path: 'client', select: 'name email position' },
+        { path: 'client', select: 'name email position phone' },
         { path: 'products.product', select: 'name description price' },
         { path: 'createdBy', select: 'name email' }
       ])

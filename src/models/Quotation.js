@@ -122,6 +122,7 @@ const quotationSchema = new mongoose.Schema({
     enum: ['Under Development', 'Booked', 'Lost'],
     default: 'Under Development'
   },
+  GST: { type: Boolean },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
