@@ -5,6 +5,7 @@ const ejs = require('ejs');
 const path = require('path');
 const fs = require('fs').promises;
 const Client = require('../models/Client'); // Added import for Client model
+const ExcelJS = require('exceljs'); // Add at the top
 
 // Utility to generate and attach PDF
 async function generateAndAttachPDF(quotation) {
@@ -500,6 +501,120 @@ const getAllQuotationsForAdmin = async (req, res) => {
   }
 };
 
+// Export quotations to Excel based on filters
+const exportQuotationsToExcel = async (req, res) => {
+  try {
+    const {
+      client,
+      month,
+      converted,
+      status,
+      userId,
+      search,
+      companyName,
+      fromMonth,
+      toMonth
+    } = req.query;
+
+    // Build filter object (same as getAllQuotations)
+    const filter = {};
+    if (userId) filter.createdBy = userId;
+    if (search) {
+      filter.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { subject: { $regex: search, $options: 'i' } }
+      ];
+    }
+    if (companyName) {
+      const clientDocs = await Client.find({ companyName: companyName }).select('_id');
+      const clientIds = clientDocs.map(c => c._id.toString());
+      if (client) {
+        if (clientIds.includes(client)) {
+          filter.client = client;
+        } else {
+          return res.status(400).json({ error: 'Selected client does not belong to the specified company.' });
+        }
+      } else {
+        filter.client = { $in: clientIds };
+      }
+    } else if (client) {
+      filter.client = client;
+    }
+    if (fromMonth) {
+      const [fromYear, fromMonthNum] = fromMonth.split('-');
+      const fromDate = new Date(fromYear, fromMonthNum - 1, 1);
+      if (!filter.createdAt) filter.createdAt = {};
+      filter.createdAt.$gte = fromDate;
+    }
+    if (toMonth) {
+      const [toYear, toMonthNum] = toMonth.split('-');
+      const toDate = new Date(toYear, toMonthNum, 0, 23, 59, 59, 999);
+      if (!filter.createdAt) filter.createdAt = {};
+      filter.createdAt.$lte = toDate;
+    }
+    if (converted) filter.converted = converted;
+    if (status) filter.status = status;
+
+    // Fetch quotations
+    const quotations = await Quotation.find(filter)
+      .populate([
+        { path: 'client', select: 'name email position phone' },
+        { path: 'products.product', select: 'name description price' },
+        { path: 'createdBy', select: 'name email' }
+      ])
+      .sort({ createdAt: -1 });
+
+    // Create Excel workbook and worksheet
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Quotations');
+
+    // Define headers (customize as needed)
+    worksheet.columns = [
+      { header: 'Quotation Ref', key: 'quotationRefNumber', width: 20 },
+      { header: 'Title', key: 'title', width: 30 },
+      { header: 'Client Name', key: 'clientName', width: 25 },
+      { header: 'Client Email', key: 'clientEmail', width: 25 },
+      { header: 'Subject', key: 'subject', width: 30 },
+      { header: 'Total Amount', key: 'totalAmount', width: 15 },
+      { header: 'Status', key: 'status', width: 15 },
+      { header: 'Created By', key: 'createdBy', width: 20 },
+      { header: 'Created At', key: 'createdAt', width: 20 }
+      // Add more fields as needed
+    ];
+
+    // Add rows
+    quotations.forEach(q => {
+      let clientEmail = '';
+      if (Array.isArray(q.client?.email)) {
+        clientEmail = q.client.email.join(', ');
+      } else if (typeof q.client?.email === 'string') {
+        clientEmail = q.client.email;
+      }
+      worksheet.addRow({
+        quotationRefNumber: q.quotationRefNumber,
+        title: q.title,
+        clientName: q.client?.name || '',
+        clientEmail: clientEmail,
+        subject: q.subject,
+        totalAmount: q.totalAmount,
+        status: q.status,
+        createdBy: q.createdBy?.name || '',
+        createdAt: q.createdAt ? q.createdAt.toISOString().slice(0, 10) : ''
+      });
+    });
+
+    // Set response headers
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename=quotations.xlsx');
+
+    // Write workbook to response
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   createQuotation,
   getAllQuotations,
@@ -507,7 +622,8 @@ module.exports = {
   getQuotationById,
   updateQuotation,
   deleteQuotation,
-  updateQuotationStatus
+  updateQuotationStatus,
+  exportQuotationsToExcel // <-- add this line
 }; 
 
 

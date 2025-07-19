@@ -7,7 +7,8 @@ const {
   getQuotationById, 
   updateQuotation, 
   deleteQuotation,
-  updateQuotationStatus
+  updateQuotationStatus,
+  exportQuotationsToExcel
 } = require('../controllers/quotationController');
 const { auth } = require('../middleware/auth');
 const { checkRole } = require('../middleware/roleCheck');
@@ -38,6 +39,7 @@ router.use(checkRole(['admin', 'manager']));
 // Quotation routes
 router.get('/', pagination, getAllQuotations);
 router.post('/', createQuotation);
+router.get('/export/excel', exportQuotationsToExcel);
 router.get('/:id', getQuotationById);
 router.put('/:id', updateQuotation);
 router.delete('/:id', deleteQuotation);
