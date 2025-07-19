@@ -41,7 +41,7 @@ const uploadDataSheetOrCatalog = (req, res) => {
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
     }
-    const { type } = req.body; // type should be 'datasheet' or 'catalog'
+    const { type } = req.query; // type should be 'datasheet' or 'catalog'
     if (!type || !['datasheet', 'catalog'].includes(type)) {
       return res.status(400).json({ error: 'Invalid type. Must be "datasheet" or "catalog".' });
     }
