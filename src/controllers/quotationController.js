@@ -327,14 +327,14 @@ const updateQuotation = async (req, res) => {
     quotation.relatedProducts = relatedProducts;
     quotation.suggestedProducts = suggestedProducts;
     await quotation.save();
-    await quotation.populate([
-      { path: 'client', select: 'name email position phone' },
-      { path: 'products.product', select: 'name description price' },
-      { path: 'relatedProducts', select: 'title image description price productImage name' },
-      { path: 'suggestedProducts', select: 'title image description price productImage name' },
-      { path: 'createdBy', select: 'name email' }
-    ]);
-    await generateAndAttachPDF(quotation);
+    // await quotation.populate([
+    //   { path: 'client', select: 'name email position phone' },
+    //   { path: 'products.product', select: 'name description price' },
+    //   { path: 'relatedProducts', select: 'title image description price productImage name' },
+    //   { path: 'suggestedProducts', select: 'title image description price productImage name' },
+    //   { path: 'createdBy', select: 'name email' }
+    // ]);
+    // await generateAndAttachPDF(quotation);
     res.json({
       message: 'Quotation updated successfully',
       quotation
