@@ -23,12 +23,6 @@ const createProduct = async (req, res) => {
       catalog
     } = req.body;
 
-    // Validate model exists
-    const modelExists = await Model.findById(model);
-    if (!modelExists) {
-      return res.status(400).json({ error: 'Model not found' });
-    }
-
     if (!Array.isArray(categories) || categories.length === 0) {
       return res.status(400).json({ error: 'At least one category is required' });
     }
@@ -41,7 +35,7 @@ const createProduct = async (req, res) => {
     const product = new Product({
       productImage,
       title,
-      model,
+      model, // Now a String, not a ref
       make,
       type,
       features,
@@ -59,8 +53,7 @@ const createProduct = async (req, res) => {
 
     await product.save();
     await product.populate([
-      { path: 'categories', select: 'name' },
-      { path: 'model', select: 'name' }
+      { path: 'categories', select: 'name' }
     ]);
 
     res.status(201).json({
@@ -84,7 +77,7 @@ const getAllProducts = async (req, res) => {
       filter.title = { $regex: title, $options: 'i' };
     }
     if (model) {
-      filter.model = model;
+      filter.model = model; // Now a String match
     }
     if (categories) {
       const categoryArray = Array.isArray(categories) ? categories : categories.split(',');
@@ -97,7 +90,7 @@ const getAllProducts = async (req, res) => {
     // Get paginated products with filters
     const products = await Product.find(filter)
       .populate('categories', 'name')
-      .populate('model', 'name')
+      // .populate('model', 'name') // Remove model population
       .sort(sort)
       .skip(skip)
       .limit(limit);
@@ -120,8 +113,7 @@ const getAllProducts = async (req, res) => {
 const getProductById = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id)
-      .populate('categories', 'name')
-      .populate('model', 'name');
+      .populate('categories', 'name'); // Remove model population
       
     if (!product) {
       return res.status(404).json({ error: 'Product not found' });
@@ -161,13 +153,7 @@ const updateProduct = async (req, res) => {
       return res.status(404).json({ error: 'Product not found' });
     }
 
-    // Validate model exists if it's being updated
-    if (model) {
-      const modelExists = await Model.findById(model);
-      if (!modelExists) {
-        return res.status(400).json({ error: 'Model not found' });
-      }
-    }
+    // No model validation needed, as model is now a String
 
     if (categories) {
       if (!Array.isArray(categories) || categories.length === 0) {
@@ -185,7 +171,7 @@ const updateProduct = async (req, res) => {
       {
         productImage,
         title,
-        model,
+        model, // Now a String
         make,
         type,
         features,
@@ -202,8 +188,8 @@ const updateProduct = async (req, res) => {
       },
       { new: true, runValidators: true }
     ).populate([
-      { path: 'categories', select: 'name' },
-      { path: 'model', select: 'name' }
+      { path: 'categories', select: 'name' }
+      // No model population
     ]);
 
     res.json({
