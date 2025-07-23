@@ -13,13 +13,6 @@ const generateQuotationPDF = asyncHandler(async (req, res) => {
 
         // Find quotation with populated data
         const quotation = await Quotation.findById(quotationId)
-            .populate({
-                path: 'products.product',
-                populate: {
-                    path: 'model',
-                    model: 'Model'
-                }
-            })
             .populate('client')
             .populate('createdBy');
 

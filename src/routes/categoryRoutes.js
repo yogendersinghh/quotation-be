@@ -12,7 +12,7 @@ router.get('/', getAllCategories);
 // Get category by ID
 router.get('/:id', getCategoryById);
 // Update category (admin only)
-router.put('/:id', auth, isAdmin, updateCategory);
+router.post('/:id', auth, isAdmin, updateCategory);
 
 // Delete category (admin only)
 router.delete('/:id', auth, isAdmin, deleteCategory);

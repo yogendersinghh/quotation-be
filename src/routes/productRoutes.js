@@ -14,7 +14,7 @@ router.get('/', pagination, getAllProducts);
 router.get('/:id', getProductById);
 
 // Update product (admin only)
-router.put('/:id', auth, isAdmin, updateProduct);
+router.post('/:id', auth, isAdmin, updateProduct);
 
 // Delete product (admin only)
 router.delete('/:id', auth, isAdmin, deleteProduct);

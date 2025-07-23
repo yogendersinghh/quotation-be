@@ -14,7 +14,7 @@ router.get("/", auth, isAdmin, getModels);
 router.get("/:id", auth, isAdmin, getModelById);
 // Protected routes
 router.post("/", auth, isAdmin, createModel);
-router.put("/:id", auth, isAdmin, updateModel);
+router.post("/:id", auth, isAdmin, updateModel);
 router.delete("/:id", auth, isAdmin, deleteModel);
 
 module.exports = router;

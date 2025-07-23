@@ -14,7 +14,7 @@ router.post('/', createClient);
 router.get('/', pagination, getAllClients);
 router.get('/company-names', getAllCompanyNames);
 router.get('/:id', getClientById);
-router.put('/:id', updateClient);
+router.post('/:id', updateClient);
 router.delete('/:id', deleteClient);
 
 module.exports = router; 

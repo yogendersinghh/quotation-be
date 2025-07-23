@@ -12,11 +12,11 @@ async function generateAndAttachPDF(quotation) {
   // Repopulate for fresh data
   await quotation.populate([
     { path: 'client', select: 'name email position phone' },
-    { path: 'products.product', populate: { path: 'model', model: 'Model' } },
-    { path: 'relatedProducts', select: 'title image description price productImage name' },
-    { path: 'suggestedProducts', select: 'title image description price productImage name' },
+    { path: 'relatedProducts', select: 'title image specification price productImage name' },
+    { path: 'suggestedProducts', select: 'title image specification price productImage name' },
     { path: 'createdBy' }
   ]);
+  console.log("quotation",JSON.stringify(quotation,null,2))
   const templatePath = path.join(__dirname, '../views/quotation.ejs');
   const templateContent = await fs.readFile(templatePath, 'utf8');
   const htmlContent = ejs.render(templateContent, {
@@ -90,11 +90,11 @@ const createQuotation = async (req, res) => {
       return res.status(400).json({ error: 'At least one product is required' });
     }
     for (const product of products) {
-      if (!product.product) {
-        return res.status(400).json({ error: 'Product ID is required for each product' });
-      }
-      if (!product.title || !product.make || !product.model || product.qty == null || product.unitPrice == null || product.totalAmount == null) {
-        return res.status(400).json({ error: 'Each product must have title, make, model, qty, unitPrice, and totalAmount' });
+      const requiredFields = ['image', 'price', 'product', 'quantity', 'specification', 'title', 'total', 'unit'];
+      for (const field of requiredFields) {
+        if (product[field] === undefined || product[field] === null || product[field] === "") {
+          return res.status(400).json({ error: `Field '${field}' is required for each product` });
+        }
       }
       // Validate product exists
       const productExists = await Product.findById(product.product);
@@ -125,14 +125,7 @@ const createQuotation = async (req, res) => {
     });
 
     await quotation.save();
-    // await quotation.populate([
-    //   { path: 'client', select: 'name email position phone' },
-    //   { path: 'products.product', select: 'name description price' },
-    //   { path: 'relatedProducts', select: 'title image description price productImage name' },
-    //   { path: 'suggestedProducts', select: 'title image description price productImage name' },
-    //   { path: 'createdBy', select: 'name email' }
-    // ]);
-    // // await generateAndAttachPDF(quotation);
+    await generateAndAttachPDF(quotation);
     res.status(201).json({
       message: 'Quotation created successfully',
       quotation
@@ -296,7 +289,8 @@ const updateQuotation = async (req, res) => {
       totalAmount,
       converted,
       relatedProducts,
-      suggestedProducts
+      suggestedProducts,
+      GST
     } = req.body;
 
     // Check if quotation exists
@@ -326,6 +320,7 @@ const updateQuotation = async (req, res) => {
     quotation.converted = converted;
     quotation.relatedProducts = relatedProducts;
     quotation.suggestedProducts = suggestedProducts;
+    quotation.GST = GST;
     await quotation.save();
     // await quotation.populate([
     //   { path: 'client', select: 'name email position phone' },
@@ -334,7 +329,7 @@ const updateQuotation = async (req, res) => {
     //   { path: 'suggestedProducts', select: 'title image description price productImage name' },
     //   { path: 'createdBy', select: 'name email' }
     // ]);
-    // await generateAndAttachPDF(quotation);
+    await generateAndAttachPDF(quotation);
     res.json({
       message: 'Quotation updated successfully',
       quotation

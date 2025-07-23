@@ -427,7 +427,7 @@
           <div class="intro">
             <span><strong>Dear Sir,</strong></span>
             <p>
-              <%= quotation.formalMessage || 'With reference to your requirement for Air Cooling, we are pleased to submit our proposal for supply & installation of Symphony Industrial / Commercial Air Coolers. The quotation is for supply of Symphony Natural Air-Cooling solution which delivers continuous fresh, filtered & cool air. Based on your cooling requirement we have calculated the cooling solution as follows:' %>
+              <%- quotation.formalMessage || 'With reference to your requirement for Air Cooling, we are pleased to submit our proposal for supply & installation of Symphony Industrial / Commercial Air Coolers. The quotation is for supply of Symphony Natural Air-Cooling solution which delivers continuous fresh, filtered & cool air. Based on your cooling requirement we have calculated the cooling solution as follows:' %>
             </p>
           </div>
 
@@ -435,74 +435,43 @@
             <thead>
               <tr>
                 <th>Sr. No</th>
-                <th>Product Name</th>
-                <th>Model</th>
-                <th>Features</th>
-                <th>Qty</th>
-                <th>Unit Price</th>
-                <th>Total Amount</th>
+                <th>Image</th>
+                <th>Title</th>
+                <th>Specification</th>
+                <th>Unit</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Total</th>
               </tr>
             </thead>
             <tbody>
               <% if (quotation.products && quotation.products.length > 0) { %>
                 <% quotation.products.forEach((item, index) => { %>
-                  <tr>
+                  <tr style="height:auto; vertical-align:top;">
                     <td><%= index + 1 %></td>
-                    <td><%= item.product ? item.product.title : 'Product' %></td>
                     <td>
-                      <div class="product-cell">
-                        <% if (item.product && item.product.productImage) { %>
-                          <img src="<%= BASE_URL %>/public/products/<%= item.product.productImage %>" alt="<%= item.product.name %>" class="product-image">
-                        <% } else { %>
-                          <img src="https://via.placeholder.com/80x60/3498db/ffffff?text=<%= item.product ? item.product.name : 'Product' %>" alt="<%= item.product ? item.product.name : 'Product' %>" class="product-image">
-                        <% } %>
-                        <div class="product-info">
-                          <% if (item.product && item.product.model) { %>
-                            <span style="font-size: 9px; color: #666;"><%= item.product.model.name %></span>
-                          <% } %>
-                        </div>
-                      </div>
+                      <% if (item.image) { %>
+                        <img src="<%= item.image %>" alt="<%= item.title %>" class="product-image" style="max-width:80px; max-height:60px; object-fit:contain;" />
+                      <% } else { %>
+                        <img src="https://via.placeholder.com/80x60?text=No+Image" alt="No Image" class="product-image" style="max-width:80px; max-height:60px; object-fit:contain;" />
+                      <% } %>
                     </td>
-                    <td><%= item.product ? item.product.features || '-' : '-' %></td>
-                    <td><%= item.quantity %> <%= item.unit || 'Nos' %></td>
-                    <td class="currency">₹ <%= item.product.price || '0' %></td>
-                    <td class="currency">₹ <%= (item.quantity * (item.product.price || 0)).toLocaleString('en-IN') %></td>
+                    <td><%= item.title %></td>
+                    <td style="white-space:pre-line; max-width:300px; word-break:break-word;"> <%= item.specification %> </td>
+                    <td><%= item.unit %></td>
+                    <td><%= item.quantity %></td>
+                    <td class="currency">₹ <%= item.price %></td>
+                    <td class="currency">₹ <%= item.total %></td>
                   </tr>
                 <% }); %>
-
-                <% if (quotation.machineInstallation) { %>
-                  <tr>
-                    <td><%= (quotation.products ? quotation.products.length : 0) + 1 %></td>
-                    <td>Machine Installation</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td><%= quotation.machineInstallation.quantity || '-' %> <%= quotation.machineInstallation.unit || '-' %></td>
-                    <td class="currency">₹ <%= quotation.machineInstallation.price || '-' %></td>
-                    <td class="currency">₹ <%= quotation.machineInstallation.total ? quotation.machineInstallation.total.toLocaleString('en-IN') : '-' %></td>
-                  </tr>
-                <% } %>
               <% } else { %>
-                <!-- Fallback static content if no products -->
                 <tr>
-                  <td>1</td>
-                  <td>PAC 20U</td>
-                  <td>
-                    <div class="product-cell">
-                      <img src="https://via.placeholder.com/80x60/3498db/ffffff?text=PAC+20U" alt="PAC 20U Air Cooler" class="product-image">
-                      <div class="product-info">
-                        <span style="font-size: 9px; color: #666;">Industrial Air Cooler</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td>11,000 cfm @ 1.1kw</td>
-                  <td>3 Nos</td>
-                  <td class="currency">₹ 95,000</td>
-                  <td class="currency">₹ 285,000</td>
+                  <td colspan="8">No products found.</td>
                 </tr>
               <% } %>
               <tr class="total-row">
-                <td colspan="6"><strong>(A) Total Amount</strong></td>
-                <td class="currency"><strong>₹ <%= quotation.totalAmount ? quotation.totalAmount.toLocaleString('en-IN') : '4,07,150' %></strong></td>
+                <td colspan="7"><strong>(A) Total Amount</strong></td>
+                <td class="currency"><strong>₹ <%= quotation.totalAmount ? quotation.totalAmount.toLocaleString('en-IN') : '0' %></strong></td>
               </tr>
             </tbody>
           </table>
@@ -514,7 +483,7 @@
           <div class="section-title">Important Notes</div>
           <% if (quotation.notes && quotation.notes.trim() !== '') { %>
             <div style="margin-left: 20px; text-align: justify; font-size: 12px;">
-              <%= quotation.notes %>
+              <%- quotation.notes %>
             </div>
           <% } else { %>
             <ul style="margin-left: 20px">
@@ -544,7 +513,7 @@
           <div class="section-title">Billing Point</div>
           <div class="billing-info">
             <strong>Material will be billed through</strong><br />
-            <%= quotation.billingDetails || 'C-165, SECTOR-10, NOIDA - 201301' %>
+            <%- quotation.billingDetails || '-' %>
           </div>
         </div>
 
@@ -556,7 +525,7 @@
               <strong>I&C</strong> - <%= quotation.installationAndCommissioning || '50% at the start & 50% after commissioning of units' %>.
             </div>
             <% if (quotation.termsAndConditions && quotation.termsAndConditions.trim() !== '') { %>
-              <%= quotation.termsAndConditions %>
+              <%- quotation.termsAndConditions %>
             <% } else { %>
               <div>
                 Transportation & handling for Symphony coolers, accessories & all
@@ -564,7 +533,7 @@
               </div>
               <div>
                 For Packaged Air Coolers (PAC) range and accessories the delivery
-                period shall be 1-2 weeks from date of receipt of order along-with
+                period shall be 1-2 weeks from date of receipt of order along-withj
                 100% payment. For Central Air-Cooling System (CAS) range, delivery
                 time will be 12-14 weeks after receipt of order along-with 100%
                 payment.
@@ -583,19 +552,74 @@
             <% } %>
           </div>
         </div>
-        <div class="signature">
-          <p>
-            We are confident that the quotation will meet your requirements and
-            look forward for your valued order.
-          </p>
-          <p><strong>Thanking you.</strong></p>
-          <p><strong>Yours truly</strong></p>
-          <div class="signature-line">
-            <strong><%= user ? user.name : 'Sumit Verma' %></strong><br />
-            <strong>(M) <%= user ? user.phone : '9810685715' %></strong>
-          </div>
-          <p style="margin-top: 20px"><strong>Attached: Brochure</strong></p>
-        </div>
+
+         <!-- Related Products Table -->
+         <div class="section-title">Related Products</div>
+         <table class="quotation-table">
+           <thead>
+             <tr>
+               <th>Product</th>
+               <th>Image</th>
+               <th>Specification</th>
+               <th>Price</th>
+             </tr>
+           </thead>
+           <tbody>
+             <% if (quotation.relatedProducts && quotation.relatedProducts.length > 0) { %>
+               <% quotation.relatedProducts.forEach(function(prod) { %>
+                 <tr>
+                   <td><%= prod.title || '-' %></td>
+                   <td>
+                     <img
+                       src="<%= prod.productImage ? (BASE_URL + '/public/products/' + prod.productImage) : 'https://via.placeholder.com/80x60?text=No+Image' %>"
+                       class="product-image"
+                       alt="<%= prod.title || 'Product' %>"
+                     />
+                   </td>
+                   <td><%= prod.specification || '-' %></td>
+                   <td><%= prod.price || '-' %></td>
+                 </tr>
+               <% }); %>
+             <% } else { %>
+               <tr><td colspan="4">No related products.</td></tr>
+             <% } %>
+           </tbody>
+         </table>
+ 
+         <!-- Suggested Products Table -->
+         <div class="section-title">Suggested Products</div>
+         <table class="quotation-table">
+           <thead>
+             <tr>
+               <th>Product</th>
+               <th>Image</th>
+               <th>Specification</th>
+               <th>Price</th>
+             </tr>
+           </thead>
+           <tbody>
+             <% if (quotation.suggestedProducts && quotation.suggestedProducts.length > 0) { %>
+               <% quotation.suggestedProducts.forEach(function(prod) { %>
+                 <tr>
+                   <td><%= prod.title || '-' %></td>
+                   <td>
+                     <img
+                       src="<%= prod.productImage ? (BASE_URL + '/public/products/' + prod.productImage) : 'https://via.placeholder.com/80x60?text=No+Image' %>"
+                       class="product-image"
+                       alt="<%= prod.title || 'Product' %>"
+                     />
+                   </td>
+                   <td><%= prod.specification || '-' %></td>
+                   <td><%= prod.price || '-' %></td>
+                 </tr>
+               <% }); %>
+             <% } else { %>
+               <tr><td colspan="4">No suggested products.</td></tr>
+             <% } %>
+           </tbody>
+         </table>
+         
+        <%- quotation.signatureImage %>
       </div>
     </div>
   </body>

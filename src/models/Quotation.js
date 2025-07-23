@@ -1,20 +1,14 @@
 const mongoose = require('mongoose');
 
-const productItemSchema = new mongoose.Schema({
-  product: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Product',
-    required: true
-  },
-  quantity: {
-    type: Number,
-    required: true,
-    min: 1
-  },
-  unit: {
-    type: String,
-    required: true
-  }
+const productSchema = new mongoose.Schema({
+  image: { type: String, required: true },
+  price: { type: Number, required: true },
+  product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
+  quantity: { type: Number, required: true },
+  specification: { type: String, required: true },
+  title: { type: String, required: true },
+  total: { type: Number, required: true },
+  unit: { type: String, required: true }
 });
 
 const machineInstallationSchema = new mongoose.Schema({
@@ -65,7 +59,7 @@ const quotationSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
-  products: [productItemSchema],
+  products: [productSchema],
   machineInstallation: machineInstallationSchema,
   notes: {
     type: String,

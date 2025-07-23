@@ -41,7 +41,7 @@ router.get('/', pagination, getAllQuotations);
 router.post('/', createQuotation);
 router.get('/export/excel', exportQuotationsToExcel);
 router.get('/:id', getQuotationById);
-router.put('/:id', updateQuotation);
+router.post('/:id', updateQuotation);
 router.delete('/:id', deleteQuotation);
 
 module.exports = router; 
