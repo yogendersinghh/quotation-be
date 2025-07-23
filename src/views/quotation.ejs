@@ -473,6 +473,19 @@
                 <td colspan="7"><strong>(A) Total Amount</strong></td>
                 <td class="currency"><strong>₹ <%= quotation.totalAmount ? quotation.totalAmount.toLocaleString('en-IN') : '0' %></strong></td>
               </tr>
+              <% if (quotation.GST) { 
+                   const gstAmount = Math.round((quotation.totalAmount || 0) * 0.20);
+                   const grandTotal = (quotation.totalAmount || 0) + gstAmount;
+              %>
+              <tr class="total-row">
+                <td colspan="7"><strong>GST (20%)</strong></td>
+                <td class="currency"><strong>₹ <%= gstAmount.toLocaleString('en-IN') %></strong></td>
+              </tr>
+              <tr class="total-row">
+                <td colspan="7"><strong>Grand Total (Incl. GST)</strong></td>
+                <td class="currency"><strong>₹ <%= grandTotal.toLocaleString('en-IN') %></strong></td>
+              </tr>
+              <% } %>
             </tbody>
           </table>
 
