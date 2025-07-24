@@ -15,6 +15,6 @@ router.get('/:id', getCategoryById);
 router.post('/:id', auth, isAdmin, updateCategory);
 
 // Delete category (admin only)
-router.delete('/:id', auth, isAdmin, deleteCategory);
+router.post('/:id/delete', auth, isAdmin, deleteCategory);
 
 module.exports = router; 

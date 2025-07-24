@@ -17,28 +17,29 @@ const defaultMessageRoutes = require('./routes/defaultMessageRoutes');
 
 const app = express();
 
-// Set EJS as template engine
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
-
 // CORS configuration
 const corsOptions = {
   origin: [
     'https://cms.yogendersingh.tech',
-    'https://cms.yogendersingh.tech/',
-    'http://localhost:3000',
     'http://localhost:3001',
-    'http://localhost:5173/',
     'http://localhost:5173',
     'http://localhost:4173'
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  allowedHeaders: ['Content-Type', 'Authorization']
 };
 
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // Handle CORS preflight for all routes
+app.options('*', cors(corsOptions));
+
+// Explicitly handle OPTIONS requests for all /api/* routes
+app.options('/api/*', cors(corsOptions));
+
+// Set EJS as template engine
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
 app.use(express.json({limit: '50mb'}));
 app.use(express.urlencoded({ extended: true ,limit: '50mb'}));
 

@@ -17,6 +17,6 @@ router.get('/:id', getProductById);
 router.post('/:id', auth, isAdmin, updateProduct);
 
 // Delete product (admin only)
-router.delete('/:id', auth, isAdmin, deleteProduct);
+router.post('/:id/delete', auth, isAdmin, deleteProduct);
 
 module.exports = router; 

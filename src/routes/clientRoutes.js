@@ -15,6 +15,6 @@ router.get('/', pagination, getAllClients);
 router.get('/company-names', getAllCompanyNames);
 router.get('/:id', getClientById);
 router.post('/:id', updateClient);
-router.delete('/:id', deleteClient);
+router.post('/:id/delete', deleteClient);
 
 module.exports = router; 

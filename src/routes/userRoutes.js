@@ -20,6 +20,6 @@ router.get('/', auth, checkRole(['admin', 'manager']), pagination, getAllUsers);
 
 // Admin only routes
 router.post('/:id', auth, isAdmin, updateUser);
-router.delete('/:id', auth, isAdmin, deleteUser);
+router.post('/:id/delete', auth, isAdmin, deleteUser);
 
 module.exports = router; 
