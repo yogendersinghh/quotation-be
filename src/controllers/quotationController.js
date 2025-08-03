@@ -12,8 +12,6 @@ async function generateAndAttachPDF(quotation) {
   // Repopulate for fresh data
   await quotation.populate([
     { path: 'client', select: 'name email position phone' },
-    { path: 'relatedProducts', select: 'title image specification price productImage name' },
-    { path: 'suggestedProducts', select: 'title image specification price productImage name' },
     { path: 'createdBy' }
   ]);
   console.log("quotation",JSON.stringify(quotation,null,2))
@@ -82,7 +80,8 @@ const createQuotation = async (req, res) => {
       totalAmount,
       relatedProducts,
       suggestedProducts,
-      GST // <-- Add GST here
+      GST, // <-- Add GST here
+      gstPercentage
     } = req.body;
 
     // Validate products exist and required fields
@@ -90,7 +89,7 @@ const createQuotation = async (req, res) => {
       return res.status(400).json({ error: 'At least one product is required' });
     }
     for (const product of products) {
-      const requiredFields = ['image', 'price', 'product', 'quantity', 'specification', 'title', 'total', 'unit'];
+      const requiredFields = ['image', 'price', 'product', 'quantity', 'specification', 'title', 'model', 'total', 'unit'];
       for (const field of requiredFields) {
         if (product[field] === undefined || product[field] === null || product[field] === "") {
           return res.status(400).json({ error: `Field '${field}' is required for each product` });
@@ -102,6 +101,12 @@ const createQuotation = async (req, res) => {
         return res.status(400).json({ error: `Product with ID ${product.product} not found` });
       }
     }
+
+    // Calculate total amount from products (price * quantity for each product)
+    const calculatedTotalAmount = products.reduce((sum, product) => {
+      const productTotal = (product.price || 0) * (product.quantity || 0);
+      return sum + productTotal;
+    }, 0);
 
     // Store all product details in the quotation
     const quotation = new Quotation({
@@ -117,10 +122,11 @@ const createQuotation = async (req, res) => {
       installationAndCommissioning,
       termsAndConditions,
       signatureImage,
-      totalAmount,
+      totalAmount: calculatedTotalAmount,
       relatedProducts,
       suggestedProducts,
       GST, // <-- Store GST
+      gstPercentage,
       createdBy: req.user._id
     });
 
@@ -151,8 +157,16 @@ const getAllQuotations = async (req, res) => {
 
     // Build filter object
     const filter = {};
-    if (userId) {
-      filter.createdBy = userId;
+    
+    // If user is admin, don't filter by userId (show all quotations)
+    // If user is not admin, filter by userId to show only their quotations
+    if (!req.user || req.user.role !== 'admin') {
+      if (userId) {
+        filter.createdBy = userId;
+      } else {
+        // For non-admin users, always filter by their own ID
+        filter.createdBy = req.user._id;
+      }
     }
 
     // Add search filter if provided
@@ -228,6 +242,11 @@ const getAllQuotations = async (req, res) => {
       .skip(skip)
       .limit(limit);
 
+    // Debug: Log user role and filter
+    console.log('🔍 Debug - User role:', req.user?.role);
+    console.log('🔍 Debug - Final filter:', filter);
+    console.log('🔍 Debug - Total quotations found:', total);
+    
     res.json({
       quotations,
       pagination: {
@@ -243,7 +262,9 @@ const getAllQuotations = async (req, res) => {
         status,
         search,
         companyName
-      }
+      },
+      userRole: req.user?.role,
+      isAdmin: req.user?.role === 'admin'
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -287,10 +308,10 @@ const updateQuotation = async (req, res) => {
       termsAndConditions,
       signatureImage,
       totalAmount,
-      converted,
       relatedProducts,
       suggestedProducts,
-      GST
+      GST,
+      gstPercentage
     } = req.body;
 
     // Check if quotation exists
@@ -298,37 +319,45 @@ const updateQuotation = async (req, res) => {
     if (!quotation) {
       return res.status(404).json({ error: 'Quotation not found' });
     }
+    
+    // Calculate total amount from products (price * quantity for each product) only if products are provided
+    let calculatedTotalAmount = 0;
+    if (products !== undefined) {
+      calculatedTotalAmount = products.reduce((sum, product) => {
+        const productTotal = (product.price || 0) * (product.quantity || 0);
+        return sum + productTotal;
+      }, 0);
+    }
+    
     // Remove old PDF if exists
     if (quotation.pdfFileName) {
       const oldPath = path.join(__dirname, '../../public/pdfs', quotation.pdfFileName);
       try { await fs.unlink(oldPath); } catch (e) { /* ignore if not found */ }
     }
-    // Update fields
-    quotation.title = title;
-    quotation.client = client;
-    quotation.subject = subject;
-    quotation.formalMessage = formalMessage;
-    quotation.products = products;
-    quotation.machineInstallation = machineInstallation;
-    quotation.notes = notes;
-    quotation.billingDetails = billingDetails;
-    quotation.supply = supply;
-    quotation.installationAndCommissioning = installationAndCommissioning;
-    quotation.termsAndConditions = termsAndConditions;
-    quotation.signatureImage = signatureImage;
-    quotation.totalAmount = totalAmount;
-    quotation.converted = converted;
-    quotation.relatedProducts = relatedProducts;
-    quotation.suggestedProducts = suggestedProducts;
-    quotation.GST = GST;
+    // Update only the fields that are provided in the payload
+    if (title !== undefined) quotation.title = title;
+    if (client !== undefined) quotation.client = client;
+    if (subject !== undefined) quotation.subject = subject;
+    if (formalMessage !== undefined) quotation.formalMessage = formalMessage;
+    if (products !== undefined) quotation.products = products;
+    if (machineInstallation !== undefined) quotation.machineInstallation = machineInstallation;
+    if (notes !== undefined) quotation.notes = notes;
+    if (billingDetails !== undefined) quotation.billingDetails = billingDetails;
+    if (supply !== undefined) quotation.supply = supply;
+    if (installationAndCommissioning !== undefined) quotation.installationAndCommissioning = installationAndCommissioning;
+    if (termsAndConditions !== undefined) quotation.termsAndConditions = termsAndConditions;
+    if (signatureImage !== undefined) quotation.signatureImage = signatureImage;
+    if (relatedProducts !== undefined) quotation.relatedProducts = relatedProducts;
+    if (suggestedProducts !== undefined) quotation.suggestedProducts = suggestedProducts;
+    if (GST !== undefined) quotation.GST = GST;
+    if (gstPercentage !== undefined) quotation.gstPercentage = gstPercentage;
+    
+    // Always recalculate total amount if products are provided
+    if (products !== undefined) {
+      quotation.totalAmount = calculatedTotalAmount;
+    }
     await quotation.save();
-    // await quotation.populate([
-    //   { path: 'client', select: 'name email position phone' },
-    //   { path: 'products.product', select: 'name description price' },
-    //   { path: 'relatedProducts', select: 'title image description price productImage name' },
-    //   { path: 'suggestedProducts', select: 'title image description price productImage name' },
-    //   { path: 'createdBy', select: 'name email' }
-    // ]);
+
     await generateAndAttachPDF(quotation);
     res.json({
       message: 'Quotation updated successfully',
@@ -610,6 +639,44 @@ const exportQuotationsToExcel = async (req, res) => {
   }
 };
 
+// Update quotation converted status
+const updateQuotationConverted = async (req, res) => {
+  try {
+    const { converted } = req.body;
+    const { id } = req.params;
+
+    // Validate converted value
+    const validConvertedValues = ['Under Development', 'Booked', 'Lost'];
+    if (!validConvertedValues.includes(converted)) {
+      return res.status(400).json({ 
+        error: 'Invalid converted value. Must be one of: Under Development, Booked, Lost' 
+      });
+    }
+
+    // Check if quotation exists
+    const quotation = await Quotation.findById(id);
+    if (!quotation) {
+      return res.status(404).json({ error: 'Quotation not found' });
+    }
+
+    // Update the converted field
+    quotation.converted = converted;
+    await quotation.save();
+
+    res.json({
+      message: 'Quotation converted status updated successfully',
+      quotation: {
+        id: quotation._id,
+        quotationRefNumber: quotation.quotationRefNumber,
+        converted: quotation.converted,
+        updatedAt: quotation.updatedAt
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   createQuotation,
   getAllQuotations,
@@ -618,7 +685,8 @@ module.exports = {
   updateQuotation,
   deleteQuotation,
   updateQuotationStatus,
-  exportQuotationsToExcel // <-- add this line
+  updateQuotationConverted,
+  exportQuotationsToExcel
 }; 
 
 

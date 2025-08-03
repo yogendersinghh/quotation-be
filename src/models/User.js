@@ -27,10 +27,6 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ['active', 'blocked'],
     default: 'active'
-  },
-  signature: {
-    type: String,
-    trim: true
   }
 }, {
   timestamps: true

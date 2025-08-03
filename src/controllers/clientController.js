@@ -11,6 +11,7 @@ const createClient = async (req, res) => {
       state,
       PIN,
       companyName,
+      companyCode,
     } = req.body;
 
     // Validate users array
@@ -21,6 +22,9 @@ const createClient = async (req, res) => {
     }
     if (!companyName) {
       return res.status(400).json({ error: "Company name is required" });
+    }
+    if (!companyCode) {
+      return res.status(400).json({ error: "Company code is required" });
     }
 
     // Collect all emails and phones from all users for duplicate check
@@ -53,16 +57,20 @@ const createClient = async (req, res) => {
       allPhones = allPhones.concat(user.phone);
     }
 
-    // Check for existing clients with any of the provided emails or phone numbers
+    // Check for existing clients with any of the provided emails, phone numbers, or company code
     const existingClient = await Client.findOne({
-      $or: [{ email: { $in: allEmails } }, { phone: { $in: allPhones } }],
+      $or: [
+        { email: { $in: allEmails } },
+        { phone: { $in: allPhones } },
+        { companyCode: companyCode }
+      ],
     });
     if (existingClient) {
       return res
         .status(400)
         .json({
           error:
-            "A client with one of these emails or phone numbers already exists",
+            "A client with one of these emails, phone numbers, or company code already exists",
         });
     }
 
@@ -78,6 +86,7 @@ const createClient = async (req, res) => {
       PIN,
       phone: user.phone, // array
       companyName,
+      companyCode,
       createdBy: req.user._id,
     }));
 
@@ -113,6 +122,7 @@ const getAllClients = async (req, res) => {
         { email: { $elemMatch: { $regex: search, $options: "i" } } },
         { phone: { $elemMatch: { $regex: search, $options: "i" } } },
         { companyName: { $regex: search, $options: "i" } },
+        { companyCode: { $regex: search, $options: "i" } },
         { address: { $regex: search, $options: "i" } },
         { place: { $regex: search, $options: "i" } },
         { city: { $regex: search, $options: "i" } },

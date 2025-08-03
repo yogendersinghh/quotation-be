@@ -436,7 +436,7 @@
               <tr>
                 <th>Sr. No</th>
                 <th>Image</th>
-                <th>Title</th>
+                <th>Model</th>
                 <th>Specification</th>
                 <th>Unit</th>
                 <th>Quantity</th>
@@ -456,7 +456,7 @@
                         <img src="https://via.placeholder.com/80x60?text=No+Image" alt="No Image" class="product-image" style="max-width:80px; max-height:60px; object-fit:contain;" />
                       <% } %>
                     </td>
-                    <td><%= item.title %></td>
+                    <td><%= item.model %></td>
                     <td style="white-space:pre-line; max-width:300px; word-break:break-word;"> <%= item.specification %> </td>
                     <td><%= item.unit %></td>
                     <td><%= item.quantity %></td>
@@ -474,11 +474,12 @@
                 <td class="currency"><strong>₹ <%= quotation.totalAmount ? quotation.totalAmount.toLocaleString('en-IN') : '0' %></strong></td>
               </tr>
               <% if (quotation.GST) { 
-                   const gstAmount = Math.round((quotation.totalAmount || 0) * 0.20);
+                   const gstPercentage = quotation.gstPercentage || 18;
+                   const gstAmount = Math.round((quotation.totalAmount || 0) * (gstPercentage / 100));
                    const grandTotal = (quotation.totalAmount || 0) + gstAmount;
               %>
               <tr class="total-row">
-                <td colspan="7"><strong>GST (20%)</strong></td>
+                <td colspan="7"><strong>GST (<%= gstPercentage %>%)</strong></td>
                 <td class="currency"><strong>₹ <%= gstAmount.toLocaleString('en-IN') %></strong></td>
               </tr>
               <tr class="total-row">
@@ -567,72 +568,68 @@
         </div>
 
          <!-- Related Products Table -->
-         <div class="section-title">Related Products</div>
-         <table class="quotation-table">
-           <thead>
-             <tr>
-               <th>Product</th>
-               <th>Image</th>
-               <th>Specification</th>
-               <th>Price</th>
-             </tr>
-           </thead>
-           <tbody>
-             <% if (quotation.relatedProducts && quotation.relatedProducts.length > 0) { %>
+         <% if (quotation.relatedProducts && quotation.relatedProducts.length > 0) { %>
+           <div class="section-title">Related Products</div>
+           <table class="quotation-table">
+             <thead>
+               <tr>
+                 <th>Model</th>
+                 <th>Image</th>
+                 <th>Specification</th>
+               </tr>
+             </thead>
+             <tbody>
                <% quotation.relatedProducts.forEach(function(prod) { %>
                  <tr>
-                   <td><%= prod.title || '-' %></td>
+                   <td><%= prod.model || '-' %></td>
                    <td>
                      <img
-                       src="<%= prod.productImage ? (BASE_URL + '/public/products/' + prod.productImage) : 'https://via.placeholder.com/80x60?text=No+Image' %>"
+                       src="<%= prod.image || 'https://via.placeholder.com/80x60?text=No+Image' %>"
                        class="product-image"
-                       alt="<%= prod.title || 'Product' %>"
+                       alt="<%= prod.model || 'Product' %>"
+                       style="max-width:80px; max-height:60px; object-fit:contain;"
                      />
                    </td>
-                   <td><%= prod.specification || '-' %></td>
-                   <td><%= prod.price || '-' %></td>
+                   <td style="white-space:pre-line; max-width:300px; word-break:break-word;"><%= prod.specification || '-' %></td>
                  </tr>
                <% }); %>
-             <% } else { %>
-               <tr><td colspan="4">No related products.</td></tr>
-             <% } %>
-           </tbody>
-         </table>
+             </tbody>
+           </table>
+         <% } %>
  
          <!-- Suggested Products Table -->
-         <div class="section-title">Suggested Products</div>
-         <table class="quotation-table">
-           <thead>
-             <tr>
-               <th>Product</th>
-               <th>Image</th>
-               <th>Specification</th>
-               <th>Price</th>
-             </tr>
-           </thead>
-           <tbody>
-             <% if (quotation.suggestedProducts && quotation.suggestedProducts.length > 0) { %>
+         <% if (quotation.suggestedProducts && quotation.suggestedProducts.length > 0) { %>
+           <div class="section-title">Suggested Products</div>
+           <table class="quotation-table">
+             <thead>
+               <tr>
+                 <th>Model</th>
+                 <th>Image</th>
+                 <th>Specification</th>
+               </tr>
+             </thead>
+             <tbody>
                <% quotation.suggestedProducts.forEach(function(prod) { %>
                  <tr>
-                   <td><%= prod.title || '-' %></td>
+                   <td><%= prod.model || '-' %></td>
                    <td>
                      <img
-                       src="<%= prod.productImage ? (BASE_URL + '/public/products/' + prod.productImage) : 'https://via.placeholder.com/80x60?text=No+Image' %>"
+                       src="<%= prod.image || 'https://via.placeholder.com/80x60?text=No+Image' %>"
                        class="product-image"
-                       alt="<%= prod.title || 'Product' %>"
+                       alt="<%= prod.model || 'Product' %>"
+                       style="max-width:80px; max-height:60px; object-fit:contain;"
                      />
                    </td>
-                   <td><%= prod.specification || '-' %></td>
-                   <td><%= prod.price || '-' %></td>
+                   <td style="white-space:pre-line; max-width:300px; word-break:break-word;"><%= prod.specification || '-' %></td>
                  </tr>
                <% }); %>
-             <% } else { %>
-               <tr><td colspan="4">No suggested products.</td></tr>
-             <% } %>
-           </tbody>
-         </table>
+             </tbody>
+           </table>
+         <% } %>
          
-        <%- quotation.signatureImage %>
+        <% if (quotation.signatureImage) { %>
+          <%- quotation.signatureImage %>
+        <% } %>
       </div>
     </div>
   </body>

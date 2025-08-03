@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 // Register a new user (admin only)
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password, role, userStatus, signature } = req.body;
+    const { name, email, password, role, userStatus } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -18,8 +18,7 @@ const registerUser = async (req, res) => {
       email,
       password,
       role: role || 'manager', // Default to manager if role not specified
-      userStatus: userStatus || 'active', // Default to active if status not specified
-      signature
+      userStatus: userStatus || 'active' // Default to active if status not specified
     });
 
     await user.save();
@@ -31,8 +30,7 @@ const registerUser = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        userStatus: user.userStatus,
-        signature: user.signature
+        userStatus: user.userStatus
       }
     });
   } catch (error) {
@@ -76,8 +74,7 @@ const loginUser = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        userStatus: user.userStatus,
-        signature: user.signature
+        userStatus: user.userStatus
       }
     });
   } catch (error) {
@@ -132,7 +129,7 @@ const getAllUsers = async (req, res) => {
 // Update user
 const updateUser = async (req, res) => {
   try {
-    const { name, email, role, userStatus, signature } = req.body;
+    const { name, email, role, userStatus } = req.body;
     const userId = req.params.id;
 
     // Check if user exists
@@ -156,8 +153,7 @@ const updateUser = async (req, res) => {
         name,
         email,
         role,
-        userStatus,
-        signature
+        userStatus
       },
       { new: true }
     ).select('-password');

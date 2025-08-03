@@ -7,6 +7,7 @@ const productSchema = new mongoose.Schema({
   quantity: { type: Number, required: true },
   specification: { type: String, required: true },
   title: { type: String, required: true },
+  model: { type: String, required: true },
   total: { type: Number, required: true },
   unit: { type: String, required: true }
 });
@@ -14,21 +15,17 @@ const productSchema = new mongoose.Schema({
 const machineInstallationSchema = new mongoose.Schema({
   quantity: {
     type: Number,
-    required: true,
     min: 1
   },
   unit: {
-    type: String,
-    required: true
+    type: String
   },
   price: {
     type: Number,
-    required: true,
     min: 0
   },
   total: {
     type: Number,
-    required: true,
     min: 0
   }
 });
@@ -60,7 +57,10 @@ const quotationSchema = new mongoose.Schema({
     trim: true
   },
   products: [productSchema],
-  machineInstallation: machineInstallationSchema,
+  machineInstallation: {
+    type: machineInstallationSchema,
+    required: false
+  },
   notes: {
     type: String,
     trim: true
@@ -87,7 +87,7 @@ const quotationSchema = new mongoose.Schema({
   },
   signatureImage: {
     type: String,
-    required: true
+    required: false
   },
   totalAmount: {
     type: Number,
@@ -99,12 +99,14 @@ const quotationSchema = new mongoose.Schema({
     trim: true
   },
   relatedProducts: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Product'
+    image: { type: String, required: false },
+    model: { type: String, required: false },
+    specification: { type: String, required: false }
   }],
   suggestedProducts: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Product'
+    image: { type: String, required: false },
+    model: { type: String, required: false },
+    specification: { type: String, required: false }
   }],
   status: {
     type: String,
@@ -117,6 +119,12 @@ const quotationSchema = new mongoose.Schema({
     default: 'Under Development'
   },
   GST: { type: Boolean },
+  gstPercentage: {
+    type: Number,
+    min: 0,
+    max: 100,
+    default: 18
+  },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

@@ -8,6 +8,7 @@ const {
   updateQuotation, 
   deleteQuotation,
   updateQuotationStatus,
+  updateQuotationConverted,
   exportQuotationsToExcel
 } = require('../controllers/quotationController');
 const { auth } = require('../middleware/auth');
@@ -32,7 +33,7 @@ router.post('/upload-signature', uploadSignature.single('signature'), (req, res)
 
 // Admin-only routes
 router.get('/admin/all', checkRole(['admin']), pagination, getAllQuotationsForAdmin);
-router.patch('/admin/:id/status', checkRole(['admin']), updateQuotationStatus);
+router.post('/admin/:id/status', checkRole(['admin']), updateQuotationStatus);
 // User routes (admin and manager)
 router.use(checkRole(['admin', 'manager']));
 
@@ -43,5 +44,6 @@ router.get('/export/excel', exportQuotationsToExcel);
 router.get('/:id', getQuotationById);
 router.post('/:id', updateQuotation);
 router.post('/:id/delete', deleteQuotation);
+router.post('/:id/converted', updateQuotationConverted);
 
 module.exports = router; 
