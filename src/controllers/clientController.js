@@ -48,11 +48,7 @@ const createClient = async (req, res) => {
             error: `User ${user.name} must have at least one phone number (as array)`,
           });
       }
-      if (!user.position) {
-        return res
-          .status(400)
-          .json({ error: `User ${user.name} must have a position` });
-      }
+      // Remove position validation as it's now optional
       allEmails = allEmails.concat(user.email);
       allPhones = allPhones.concat(user.phone);
     }
@@ -78,7 +74,7 @@ const createClient = async (req, res) => {
     const clientsToCreate = users.map((user) => ({
       name: user.name,
       email: user.email, // array
-      position: user.position,
+      position: user.position, // now optional
       address,
       place,
       city,
@@ -189,12 +185,24 @@ const updateClient = async (req, res) => {
       PIN,
       phone,
       companyName,
+      companyCode,
     } = req.body;
 
     // Check if client exists
     const client = await Client.findById(req.params.id);
     if (!client) {
       return res.status(404).json({ error: "Client not found" });
+    }
+
+    // Validate mandatory fields
+    if (!name) {
+      return res.status(400).json({ error: "Name is required" });
+    }
+    if (!companyName) {
+      return res.status(400).json({ error: "Company name is required" });
+    }
+    if (!companyCode) {
+      return res.status(400).json({ error: "Company code is required" });
     }
 
     // Validate that email is an array and has at least one email if provided
@@ -240,6 +248,7 @@ const updateClient = async (req, res) => {
         PIN,
         phone,
         companyName,
+        companyCode,
       },
       { new: true }
     ).populate("createdBy", "name email");

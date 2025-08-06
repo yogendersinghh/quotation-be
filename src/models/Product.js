@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const productSchema = new mongoose.Schema({
   productImage: {
     type: String,
-    required: true
+    required: false
   },
   title: {
     type: String,
@@ -12,28 +12,31 @@ const productSchema = new mongoose.Schema({
   },
   model: {
     type: String,
-    required: true
+    required: false
   },
   make: {
     type: String,
-    required: true
+    required: false
   },
   quality: {
     type: String,
     enum: ['economy', 'standard', 'premium', 'super premium'],
-    required: true
+    required: false
   },
   dataSheet: {
     type: String,
-    trim: true
+    trim: true,
+    required: false
   },
   catalog: {
     type: String,
-    trim: true
+    trim: true,
+    required: false
   },
   type: {
     type: String,
-    trim: true
+    trim: true,
+    required: false
   },
   features: [{
     type: String,
@@ -41,20 +44,22 @@ const productSchema = new mongoose.Schema({
   }],
   price: {
     type: Number,
-    required: true,
+    required: false,
     min: 0
   },
   warranty: {
     type: String,
-    required: true
+    required: false
   },
   specification: {
     type: String,
-    trim: true
+    trim: true,
+    required: false
   },
   termsAndCondition: {
     type: String,
-    trim: true
+    trim: true,
+    required: false
   },
   categories: [{
     type: mongoose.Schema.Types.ObjectId,
@@ -63,11 +68,13 @@ const productSchema = new mongoose.Schema({
   }],
   notes: {
     type: String,
-    trim: true
+    trim: true,
+    required: false
   },
   description: {
     type: String,
-    trim: true
+    trim: true,
+    required: false
   }
 }, {
   timestamps: true

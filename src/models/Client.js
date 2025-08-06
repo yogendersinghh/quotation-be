@@ -20,32 +20,32 @@ const clientSchema = new mongoose.Schema({
   },
   position: {
     type: String,
-    required: true,
+    required: false,
     trim: true
   },
   address: {
     type: String,
-    required: true,
+    required: false,
     trim: true
   },
   place: {
     type: String,
-    required: true,
+    required: false,
     trim: true
   },
   city: {
     type: String,
-    required: true,
+    required: false,
     trim: true
   },
   state: {
     type: String,
-    required: true,
+    required: false,
     trim: true
   },
   PIN: {
     type: String,
-    required: true,
+    required: false,
     trim: true
   },
   phone: {

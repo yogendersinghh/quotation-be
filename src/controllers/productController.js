@@ -23,33 +23,44 @@ const createProduct = async (req, res) => {
       catalog
     } = req.body;
 
+    // Validate mandatory fields
+    if (!title || title.trim() === '') {
+      return res.status(400).json({ error: 'Product title is required' });
+    }
+
     if (!Array.isArray(categories) || categories.length === 0) {
       return res.status(400).json({ error: 'At least one category is required' });
     }
+
     // Validate all categories exist
     const foundCategories = await Promise.all(categories.map(id => require('../models/Category').findById(id)));
     if (foundCategories.some(cat => !cat)) {
       return res.status(400).json({ error: 'One or more categories not found' });
     }
 
-    const product = new Product({
-      productImage,
-      title,
-      model, // Now a String, not a ref
-      make,
-      type,
-      features,
-      price,
-      warranty,
-      quality,
-      specification,
-      termsAndCondition,
-      categories,
-      notes,
-      description,
-      dataSheet,
-      catalog
-    });
+    // Create product object with only provided fields
+    const productData = {
+      title: title.trim(),
+      categories
+    };
+
+    // Add optional fields only if they are provided
+    if (productImage) productData.productImage = productImage;
+    if (model) productData.model = model;
+    if (make) productData.make = make;
+    if (type) productData.type = type;
+    if (features && Array.isArray(features)) productData.features = features;
+    if (price !== undefined && price !== null) productData.price = price;
+    if (warranty) productData.warranty = warranty;
+    if (quality) productData.quality = quality;
+    if (specification) productData.specification = specification;
+    if (termsAndCondition) productData.termsAndCondition = termsAndCondition;
+    if (notes) productData.notes = notes;
+    if (description) productData.description = description;
+    if (dataSheet) productData.dataSheet = dataSheet;
+    if (catalog) productData.catalog = catalog;
+
+    const product = new Product(productData);
 
     await product.save();
     await product.populate([
@@ -153,9 +164,12 @@ const updateProduct = async (req, res) => {
       return res.status(404).json({ error: 'Product not found' });
     }
 
-    // No model validation needed, as model is now a String
+    // Validate mandatory fields if provided
+    if (title !== undefined && (!title || title.trim() === '')) {
+      return res.status(400).json({ error: 'Product title cannot be empty' });
+    }
 
-    if (categories) {
+    if (categories !== undefined) {
       if (!Array.isArray(categories) || categories.length === 0) {
         return res.status(400).json({ error: 'At least one category is required' });
       }
@@ -165,27 +179,30 @@ const updateProduct = async (req, res) => {
       }
     }
 
+    // Build update object with only provided fields
+    const updateData = {};
+
+    if (title !== undefined) updateData.title = title.trim();
+    if (categories !== undefined) updateData.categories = categories;
+    if (productImage !== undefined) updateData.productImage = productImage;
+    if (model !== undefined) updateData.model = model;
+    if (make !== undefined) updateData.make = make;
+    if (type !== undefined) updateData.type = type;
+    if (features !== undefined) updateData.features = features;
+    if (price !== undefined) updateData.price = price;
+    if (warranty !== undefined) updateData.warranty = warranty;
+    if (quality !== undefined) updateData.quality = quality;
+    if (specification !== undefined) updateData.specification = specification;
+    if (termsAndCondition !== undefined) updateData.termsAndCondition = termsAndCondition;
+    if (notes !== undefined) updateData.notes = notes;
+    if (description !== undefined) updateData.description = description;
+    if (dataSheet !== undefined) updateData.dataSheet = dataSheet;
+    if (catalog !== undefined) updateData.catalog = catalog;
+
     // Update product
     const updatedProduct = await Product.findByIdAndUpdate(
       productId,
-      {
-        productImage,
-        title,
-        model, // Now a String
-        make,
-        type,
-        features,
-        price,
-        warranty,
-        quality,
-        specification,
-        termsAndCondition,
-        categories,
-        notes,
-        description,
-        dataSheet,
-        catalog
-      },
+      updateData,
       { new: true, runValidators: true }
     ).populate([
       { path: 'categories', select: 'name' }
