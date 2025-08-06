@@ -1,15 +1,15 @@
 const mongoose = require('mongoose');
 
 const productSchema = new mongoose.Schema({
-  image: { type: String, required: true },
-  price: { type: Number, required: true },
-  product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
-  quantity: { type: Number, required: true },
-  specification: { type: String, required: true },
-  title: { type: String, required: true },
-  model: { type: String, required: true },
-  total: { type: Number, required: true },
-  unit: { type: String, required: true }
+  image: { type: String, required: false },
+  price: { type: Number, required: false },
+  product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: false },
+  quantity: { type: Number, required: false },
+  specification: { type: String, required: false },
+  title: { type: String, required: false },
+  model: { type: String, required: false },
+  total: { type: Number, required: false },
+  unit: { type: String, required: false }
 });
 
 const machineInstallationSchema = new mongoose.Schema({
@@ -48,12 +48,12 @@ const quotationSchema = new mongoose.Schema({
   },
   subject: {
     type: String,
-    required: true,
+    required: false,
     trim: true
   },
   formalMessage: {
     type: String,
-    required: true,
+    required: false,
     trim: true
   },
   products: [productSchema],
@@ -67,22 +67,22 @@ const quotationSchema = new mongoose.Schema({
   },
   billingDetails: {
     type: String,
-    required: true,
+    required: false,
     trim: true
   },
   supply: {
     type: String,
-    required: true,
+    required: false,
     trim: true
   },
   installationAndCommissioning: {
     type: String,
-    required: true,
+    required: false,
     trim: true
   },
   termsAndConditions: {
     type: String,
-    required: true,
+    required: false,
     trim: true
   },
   signatureImage: {
@@ -91,8 +91,9 @@ const quotationSchema = new mongoose.Schema({
   },
   totalAmount: {
     type: Number,
-    required: true,
-    min: 0
+    required: false,
+    min: 0,
+    default: 0
   },
   pdfFileName: {
     type: String,

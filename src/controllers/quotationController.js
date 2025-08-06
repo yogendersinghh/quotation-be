@@ -84,29 +84,42 @@ const createQuotation = async (req, res) => {
       gstPercentage
     } = req.body;
 
-    // Validate products exist and required fields
-    if (!Array.isArray(products) || products.length === 0) {
-      return res.status(400).json({ error: 'At least one product is required' });
+    // Validate required fields
+    if (!title || !title.trim()) {
+      return res.status(400).json({ error: 'Title is required' });
     }
-    for (const product of products) {
-      const requiredFields = ['image', 'price', 'product', 'quantity', 'specification', 'title', 'model', 'total', 'unit'];
-      for (const field of requiredFields) {
-        if (product[field] === undefined || product[field] === null || product[field] === "") {
-          return res.status(400).json({ error: `Field '${field}' is required for each product` });
+
+    if (!client) {
+      return res.status(400).json({ error: 'Client is required' });
+    }
+
+    // Validate client exists
+    const clientExists = await Client.findById(client);
+    if (!clientExists) {
+      return res.status(400).json({ error: 'Client not found' });
+    }
+
+    // Validate products if provided
+    if (products && Array.isArray(products) && products.length > 0) {
+      for (const product of products) {
+        // Validate product exists if product ID is provided
+        if (product.product) {
+          const productExists = await Product.findById(product.product);
+          if (!productExists) {
+            return res.status(400).json({ error: `Product with ID ${product.product} not found` });
+          }
         }
-      }
-      // Validate product exists
-      const productExists = await Product.findById(product.product);
-      if (!productExists) {
-        return res.status(400).json({ error: `Product with ID ${product.product} not found` });
       }
     }
 
-    // Calculate total amount from products (price * quantity for each product)
-    const calculatedTotalAmount = products.reduce((sum, product) => {
-      const productTotal = (product.price || 0) * (product.quantity || 0);
-      return sum + productTotal;
-    }, 0);
+    // Calculate total amount from products (price * quantity for each product) only if products are provided
+    let calculatedTotalAmount = 0;
+    if (products && Array.isArray(products) && products.length > 0) {
+      calculatedTotalAmount = products.reduce((sum, product) => {
+        const productTotal = (product.price || 0) * (product.quantity || 0);
+        return sum + productTotal;
+      }, 0);
+    }
 
     // Store all product details in the quotation
     const quotation = new Quotation({
@@ -114,7 +127,7 @@ const createQuotation = async (req, res) => {
       client,
       subject,
       formalMessage,
-      products, // Store the array of product objects as received
+      products: products || [], // Store the array of product objects as received
       machineInstallation,
       notes,
       billingDetails,
@@ -123,8 +136,8 @@ const createQuotation = async (req, res) => {
       termsAndConditions,
       signatureImage,
       totalAmount: calculatedTotalAmount,
-      relatedProducts,
-      suggestedProducts,
+      relatedProducts: relatedProducts || [],
+      suggestedProducts: suggestedProducts || [],
       GST, // <-- Store GST
       gstPercentage,
       createdBy: req.user._id
@@ -319,14 +332,47 @@ const updateQuotation = async (req, res) => {
     if (!quotation) {
       return res.status(404).json({ error: 'Quotation not found' });
     }
+
+    // Validate required fields if provided
+    if (title !== undefined && (!title || !title.trim())) {
+      return res.status(400).json({ error: 'Title is required' });
+    }
+
+    if (client !== undefined) {
+      if (!client) {
+        return res.status(400).json({ error: 'Client is required' });
+      }
+      // Validate client exists
+      const clientExists = await Client.findById(client);
+      if (!clientExists) {
+        return res.status(400).json({ error: 'Client not found' });
+      }
+    }
+
+    // Validate products if provided
+    if (products !== undefined && Array.isArray(products) && products.length > 0) {
+      for (const product of products) {
+        // Validate product exists if product ID is provided
+        if (product.product) {
+          const productExists = await Product.findById(product.product);
+          if (!productExists) {
+            return res.status(400).json({ error: `Product with ID ${product.product} not found` });
+          }
+        }
+      }
+    }
     
     // Calculate total amount from products (price * quantity for each product) only if products are provided
     let calculatedTotalAmount = 0;
     if (products !== undefined) {
-      calculatedTotalAmount = products.reduce((sum, product) => {
-        const productTotal = (product.price || 0) * (product.quantity || 0);
-        return sum + productTotal;
-      }, 0);
+      if (Array.isArray(products) && products.length > 0) {
+        calculatedTotalAmount = products.reduce((sum, product) => {
+          const productTotal = (product.price || 0) * (product.quantity || 0);
+          return sum + productTotal;
+        }, 0);
+      } else {
+        calculatedTotalAmount = 0;
+      }
     }
     
     // Remove old PDF if exists
@@ -334,6 +380,7 @@ const updateQuotation = async (req, res) => {
       const oldPath = path.join(__dirname, '../../public/pdfs', quotation.pdfFileName);
       try { await fs.unlink(oldPath); } catch (e) { /* ignore if not found */ }
     }
+    
     // Update only the fields that are provided in the payload
     if (title !== undefined) quotation.title = title;
     if (client !== undefined) quotation.client = client;

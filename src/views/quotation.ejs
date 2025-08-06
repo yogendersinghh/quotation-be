@@ -403,169 +403,139 @@
 
         <div class="proposal-details">
           <div class="ref-date">
-            <div><strong>Ref.No.:</strong> <%= quotation.quotationRefNumber || 'FST/VENTILATION/34/2037/COOLING' %></div>
-            <div><strong>Date:</strong> <%= quotation.createdAt ? new Date(quotation.createdAt).toLocaleDateString('en-GB') : '25.04.2025' %></div>
+            <div><strong>Ref.No.:</strong> <%= quotation.quotationRefNumber  %></div>
+            <div><strong>Date:</strong> <%= new Date(quotation.createdAt).toLocaleDateString('en-GB') %></div>
           </div>
 
           <div class="recipient">
             <strong>To:</strong><br />
-            <%= client ? client.name : 'Mr. Atul Kale' %><br />
-            <%= client ? client.position : 'General Manager-Projects' %><br />
-            <%= client ? client.companyName : 'Bansal Wire Industries Ltd.' %>
+            <%= client.name %><br />
+            <%= client.position %><br />
+            <%= client.companyName %>
             <%= client.address %> <br/>
             <%= client.city %> <%= client.PIN %> <br/>
           </div>
 
-                      <div class="subject">
+          <% if (quotation.subject && quotation.subject.length > 0) { %>
+          <div class="subject">
             <div class="subject-text">
-              <strong>Subject:</strong> <%= quotation.subject || 'Quotation for Supply & Installation of Air-cooling System' %><br />
+              <strong>Subject:</strong> <%= quotation.subject %><br />
             </div>
-
-            <!-- <div class="area"><strong>Formal Message:</strong> <%= quotation.formalMessage || 'We are pleased to submit our proposal for your consideration.' %></div> -->
           </div>
+          <% } %>
 
-          <div class="intro">
-            <span><strong>Dear Sir,</strong></span>
-            <p>
-              <%- quotation.formalMessage || 'With reference to your requirement for Air Cooling, we are pleased to submit our proposal for supply & installation of Symphony Industrial / Commercial Air Coolers. The quotation is for supply of Symphony Natural Air-Cooling solution which delivers continuous fresh, filtered & cool air. Based on your cooling requirement we have calculated the cooling solution as follows:' %>
-            </p>
-          </div>
+          <% if (quotation.formalMessage && quotation.formalMessage.length > 0) { %>
+          <p>
+              <div class="intro">
+              <span><strong>Dear Sir,</strong></span>
+              <%- quotation.formalMessage %>
+            </div>
+          </p>
+          <% } %>
 
-          <table class="quotation-table">
-            <thead>
-              <tr>
-                <th>Sr. No</th>
-                <th>Image</th>
-                <th>Model</th>
-                <th>Specification</th>
-                <th>Unit</th>
-                <th>Quantity</th>
-                <th>Price</th>
-                <th>Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% if (quotation.products && quotation.products.length > 0) { %>
+          <% if (quotation.products && quotation.products.length > 0) { %>
+            <table class="quotation-table">
+              <thead>
+                <tr>
+                  <th>Sr. No</th>
+                  <th>Image</th>
+                  <th>Model</th>
+                  <th>Specification</th>
+                  <th>Unit</th>
+                  <th>Quantity</th>
+                  <th>Price</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>
                 <% quotation.products.forEach((item, index) => { %>
                   <tr style="height:auto; vertical-align:top;">
                     <td><%= index + 1 %></td>
                     <td>
                       <% if (item.image) { %>
-                        <img src="<%= item.image %>" alt="<%= item.title %>" class="product-image" style="max-width:80px; max-height:60px; object-fit:contain;" />
+                        <img src="<%= item.image %>" alt="<%= item.title || 'Product' %>" class="product-image" style="max-width:80px; max-height:60px; object-fit:contain;" />
                       <% } else { %>
                         <img src="https://via.placeholder.com/80x60?text=No+Image" alt="No Image" class="product-image" style="max-width:80px; max-height:60px; object-fit:contain;" />
                       <% } %>
                     </td>
-                    <td><%= item.model %></td>
-                    <td style="white-space:pre-line; max-width:300px; word-break:break-word;"> <%= item.specification %> </td>
-                    <td><%= item.unit %></td>
-                    <td><%= item.quantity %></td>
-                    <td class="currency">₹ <%= item.price %></td>
-                    <td class="currency">₹ <%= item.total %></td>
+                    <td><%= item.model || '-' %></td>
+                    <td style="white-space:pre-line; max-width:300px; word-break:break-word;"> <%= item.specification || '-' %> </td>
+                    <td><%= item.unit || '-' %></td>
+                    <td><%= item.quantity || '-' %></td>
+                    <td class="currency">₹ <%= item.price || '0' %></td>
+                    <td class="currency">₹ <%= item.total || '0' %></td>
                   </tr>
                 <% }); %>
-              <% } else { %>
-                <tr>
-                  <td colspan="8">No products found.</td>
+                <tr class="total-row">
+                  <td colspan="7"><strong>(A) Total Amount</strong></td>
+                  <td class="currency"><strong>₹ <%= quotation.totalAmount ? quotation.totalAmount.toLocaleString('en-IN') : '0' %></strong></td>
                 </tr>
-              <% } %>
-              <tr class="total-row">
-                <td colspan="7"><strong>(A) Total Amount</strong></td>
-                <td class="currency"><strong>₹ <%= quotation.totalAmount ? quotation.totalAmount.toLocaleString('en-IN') : '0' %></strong></td>
-              </tr>
-              <% if (quotation.GST) { 
-                   const gstPercentage = quotation.gstPercentage || 18;
-                   const gstAmount = Math.round((quotation.totalAmount || 0) * (gstPercentage / 100));
-                   const grandTotal = (quotation.totalAmount || 0) + gstAmount;
-              %>
-              <tr class="total-row">
-                <td colspan="7"><strong>GST (<%= gstPercentage %>%)</strong></td>
-                <td class="currency"><strong>₹ <%= gstAmount.toLocaleString('en-IN') %></strong></td>
-              </tr>
-              <tr class="total-row">
-                <td colspan="7"><strong>Grand Total (Incl. GST)</strong></td>
-                <td class="currency"><strong>₹ <%= grandTotal.toLocaleString('en-IN') %></strong></td>
-              </tr>
-              <% } %>
-            </tbody>
-          </table>
+                <% if (quotation.GST) { 
+                     const gstPercentage = quotation.gstPercentage || 18;
+                     const gstAmount = Math.round((quotation.totalAmount || 0) * (gstPercentage / 100));
+                     const grandTotal = (quotation.totalAmount || 0) + gstAmount;
+                %>
+                <tr class="total-row">
+                  <td colspan="7"><strong>GST (<%= gstPercentage %>%)</strong></td>
+                  <td class="currency"><strong>₹ <%= gstAmount.toLocaleString('en-IN') %></strong></td>
+                </tr>
+                <tr class="total-row">
+                  <td colspan="7"><strong>Grand Total (Incl. GST)</strong></td>
+                  <td class="currency"><strong>₹ <%= grandTotal.toLocaleString('en-IN') %></strong></td>
+                </tr>
+                <% } %>
+              </tbody>
+            </table>
 
-          <div class="note"><strong>Note:</strong> GST & Freight Extra</div>
-        </div>
-
-        <div class="important-note">
-          <div class="section-title">Important Notes</div>
-          <% if (quotation.notes && quotation.notes.trim() !== '') { %>
-            <div style="margin-left: 20px; text-align: justify; font-size: 12px;">
-              <%- quotation.notes %>
-            </div>
+            <div class="note"><strong>Note:</strong> GST & Freight Extra</div>
           <% } else { %>
-            <ul style="margin-left: 20px">
-              <li>
-                Recommended water supply should be less than 400 TDS. All electrical
-                work under customer scope.
-              </li>
-              <li>
-                Size of wire suitable to ampere rating of the motor which shall be
-                selected by qualified Electrician of the customer.
-              </li>
-              <li>
-                Use single phase preventer for all three phase machines, Spike
-                buster for all machines & Voltage stabilizer where voltage
-                fluctuates more than 5%.
-              </li>
-              <li>Any change in quantity shall be charged extra.</li>
-              <li>
-                Any kind of charges / scope of work which is not specified in above,
-                will be extra as per actual.
-              </li>
-            </ul>
+            <div style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 4px; margin: 15px 0;">
+              <p style="font-size: 14px; color: #666;">No products added to this quotation.</p>
+            </div>
           <% } %>
         </div>
 
-        <div class="billing">
-          <div class="section-title">Billing Point</div>
-          <div class="billing-info">
-            <strong>Material will be billed through</strong><br />
-            <%- quotation.billingDetails || '-' %>
+        <% if (quotation.notes && quotation.notes.trim() !== '') { %>
+          <div class="important-note">
+            <div class="section-title">Important Notes</div>
+            <div style="margin-left: 20px; text-align: justify; font-size: 12px;">
+              <%- quotation.notes %>
+            </div>
           </div>
-        </div>
+          <% } %>
 
-                <div class="terms">
+        <% if (quotation.billingDetails) { %>
+          <div class="billing">
+            <div class="section-title">Billing Point</div>
+            <div class="billing-info">
+              <strong>Material will be billed through</strong><br />
+              <%- quotation.billingDetails %>
+            </div>
+          </div>
+        <% } %>
+
+        <% if (quotation.supply || quotation.installationAndCommissioning) { %>
+        <div class="terms">
           <div class="section-title">Terms & Conditions</div>
           <div class="terms-list">
-            <div>
-              <strong>Supply</strong> - <%= quotation.supply || '100% with the purchase order for supply of Symphony coolers & accessories' %><br />
-              <strong>I&C</strong> - <%= quotation.installationAndCommissioning || '50% at the start & 50% after commissioning of units' %>.
-            </div>
+            <% if (quotation.supply) { %>
+              <div>
+                <strong>Supply</strong> - <%= quotation.supply %><br />
+              </div>
+            <% } %>
+            <% if (quotation.installationAndCommissioning) { %>
+              <div>
+                <strong>I&C</strong> - <%= quotation.installationAndCommissioning %>.
+              </div>
+            <% } %>
+            
             <% if (quotation.termsAndConditions && quotation.termsAndConditions.trim() !== '') { %>
               <%- quotation.termsAndConditions %>
-            <% } else { %>
-              <div>
-                Transportation & handling for Symphony coolers, accessories & all
-                material used for low side will be extra at actuals.
-              </div>
-              <div>
-                For Packaged Air Coolers (PAC) range and accessories the delivery
-                period shall be 1-2 weeks from date of receipt of order along-withj
-                100% payment. For Central Air-Cooling System (CAS) range, delivery
-                time will be 12-14 weeks after receipt of order along-with 100%
-                payment.
-              </div>
-              <div>
-                The specifications quoted & the catalogues are subject to change
-                without any prior notice.
-              </div>
-              <div>
-                Any change in Government levies would be charged accordingly.
-              </div>
-              <div>
-                All disputes for Symphony products are subject to Ahmedabad, Gujarat
-                Jurisdiction only.
-              </div>
             <% } %>
           </div>
         </div>
+        <% } %>
+        
 
          <!-- Related Products Table -->
          <% if (quotation.relatedProducts && quotation.relatedProducts.length > 0) { %>
