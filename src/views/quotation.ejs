@@ -196,8 +196,6 @@
       }
 
       .total-row {
-        background: #2c3e50 !important;
-        color: white;
         font-weight: bold;
       }
 
@@ -282,6 +280,21 @@
         background: #f8f9fa;
         border-radius: 4px;
         font-size: 11px;
+      }
+
+      /* Override any inline styles in signature content */
+      .signature * {
+        font-size: 11px !important;
+        font-weight: normal !important;
+        color: #333 !important;
+      }
+
+      /* Ensure phone numbers don't appear larger */
+      .signature span,
+      .signature div,
+      .signature p {
+        font-size: 11px !important;
+        font-weight: normal !important;
       }
 
       .signature-line {
@@ -466,7 +479,20 @@
                     <td class="currency">₹ <%= item.total || '0' %></td>
                   </tr>
                 <% }); %>
-                <tr class="total-row">
+                
+                <% if (quotation.machineInstallation) { %>
+                  <tr style="height:auto; vertical-align:top;">
+                    <td><%= quotation.products.length + 1 %></td>
+                    <td>-</td>
+                    <td>Machine Installation</td>
+                    <td style="white-space:pre-line; max-width:300px; word-break:break-word;">Machine Installation Services</td>
+                    <td><%= quotation.machineInstallation.unit || '-' %></td>
+                    <td><%= quotation.machineInstallation.quantity || '-' %></td>
+                    <td class="currency">₹ <%= quotation.machineInstallation.price || '0' %></td>
+                    <td class="currency">₹ <%= quotation.machineInstallation.total || '0' %></td>
+                  </tr>
+                <% } %>
+                <tr class="total">
                   <td colspan="7"><strong>(A) Total Amount</strong></td>
                   <td class="currency"><strong>₹ <%= quotation.totalAmount ? quotation.totalAmount.toLocaleString('en-IN') : '0' %></strong></td>
                 </tr>
@@ -495,9 +521,49 @@
           <% } %>
         </div>
 
+        <% 
+        // Filter products that have notes
+        const productsWithNotes = quotation.products.filter(product => product.notes && product.notes.trim() !== '');
+        %>
+        <% if (productsWithNotes.length > 0) { %>
+          <div class="important-note">
+            <div class="section-title">Product Notes</div>
+            <div style="margin-left: 20px; text-align: justify; font-size: 12px;">
+              <% productsWithNotes.forEach((product, index) => { %>
+                <div style="margin-bottom: 15px;">
+                  <strong><%= index + 1 %>. <%= product.title || product.model || 'Product' %></strong><br/>
+                  <div style="margin-left: 20px; margin-top: 5px;">
+                    <%- product.notes %>
+                  </div>
+                </div>
+              <% }); %>
+            </div>
+          </div>
+        <% } %>
+
+        <% 
+        // Filter products that have terms and conditions
+        const productsWithTerms = quotation.products.filter(product => product.termsAndConditions && product.termsAndConditions.trim() !== '');
+        %>
+        <% if (productsWithTerms.length > 0) { %>
+          <div class="important-note">
+            <div class="section-title">Product Terms & Conditions</div>
+            <div style="margin-left: 20px; text-align: justify; font-size: 12px;">
+              <% productsWithTerms.forEach((product, index) => { %>
+                <div style="margin-bottom: 15px;">
+                  <strong><%= index + 1 %>. <%= product.title || product.model || 'Product' %></strong><br/>
+                  <div style="margin-left: 20px; margin-top: 5px;">
+                    <%- product.termsAndConditions %>
+                  </div>
+                </div>
+              <% }); %>
+            </div>
+          </div>
+        <% } %>
+
         <% if (quotation.notes && quotation.notes.trim() !== '') { %>
           <div class="important-note">
-            <div class="section-title">Important Notes</div>
+            <div class="section-title">General Notes</div>
             <div style="margin-left: 20px; text-align: justify; font-size: 12px;">
               <%- quotation.notes %>
             </div>
@@ -516,7 +582,7 @@
 
         <% if (quotation.supply || quotation.installationAndCommissioning) { %>
         <div class="terms">
-          <div class="section-title">Terms & Conditions</div>
+          <div class="section-title">General Terms & Conditions</div>
           <div class="terms-list">
             <% if (quotation.supply) { %>
               <div>
@@ -598,7 +664,9 @@
          <% } %>
          
         <% if (quotation.signatureImage) { %>
-          <%- quotation.signatureImage %>
+          <div class="signature">
+            <%- quotation.signatureImage %>
+          </div>
         <% } %>
       </div>
     </div>

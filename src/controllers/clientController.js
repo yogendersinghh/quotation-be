@@ -12,6 +12,7 @@ const createClient = async (req, res) => {
       PIN,
       companyName,
       companyCode,
+      companyStage,
     } = req.body;
 
     // Validate users array
@@ -53,22 +54,18 @@ const createClient = async (req, res) => {
       allPhones = allPhones.concat(user.phone);
     }
 
-    // Check for existing clients with any of the provided emails, phone numbers, or company code
-    const existingClient = await Client.findOne({
-      $or: [
-        { email: { $in: allEmails } },
-        { phone: { $in: allPhones } },
-        { companyCode: companyCode }
-      ],
-    });
-    if (existingClient) {
-      return res
-        .status(400)
-        .json({
-          error:
-            "A client with one of these emails, phone numbers, or company code already exists",
-        });
-    }
+    // // Check for existing clients with the same company code
+    // const existingClient = await Client.findOne({
+    //   companyCode: companyCode
+    // });
+    // if (existingClient) {
+    //   return res
+    //     .status(400)
+    //     .json({
+    //       error:
+    //         "A client with this company code already exists",
+    //     });
+    // }
 
     // Create client documents
     const clientsToCreate = users.map((user) => ({
@@ -83,6 +80,7 @@ const createClient = async (req, res) => {
       phone: user.phone, // array
       companyName,
       companyCode,
+      companyStage,
       createdBy: req.user._id,
     }));
 
@@ -101,7 +99,7 @@ const createClient = async (req, res) => {
 const getAllClients = async (req, res) => {
   try {
     const { page, limit, skip, sort } = req.pagination;
-    const { search, companyName } = req.query;
+    const { search, companyName, companyCode } = req.query;
     console.log("🚀 ~ getAllClients ~ search:", search);
 
     // Build filter object
@@ -110,6 +108,10 @@ const getAllClients = async (req, res) => {
     // Add companyName filter if provided
     if (companyName) {
       filter.companyName = { $regex: companyName, $options: "i" };
+    }
+    // Add companyCode filter if provided
+    if (companyCode) {
+      filter.companyCode = { $regex: companyCode, $options: "i" };
     }
     // Add search filter if provided
     if (search) {
@@ -186,6 +188,7 @@ const updateClient = async (req, res) => {
       phone,
       companyName,
       companyCode,
+      companyStage,
     } = req.body;
 
     // Check if client exists
@@ -249,6 +252,7 @@ const updateClient = async (req, res) => {
         phone,
         companyName,
         companyCode,
+        companyStage,
       },
       { new: true }
     ).populate("createdBy", "name email");
@@ -280,8 +284,27 @@ const deleteClient = async (req, res) => {
 // Get all unique company names
 const getAllCompanyNames = async (req, res) => {
   try {
-    const companyNames = await Client.distinct("companyName");
-    res.json({ companyNames });
+    // Get unique company names and all their corresponding codes
+    const companies = await Client.aggregate([
+      {
+        $group: {
+          _id: "$companyName",
+          companyCodes: { $addToSet: "$companyCode" }
+        }
+      },
+      {
+        $project: {
+          companyName: "$_id",
+          companyCodes: 1,
+          _id: 0
+        }
+      },
+      {
+        $sort: { companyName: 1 }
+      }
+    ]);
+
+    res.json({ companies });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

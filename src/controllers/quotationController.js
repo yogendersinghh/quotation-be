@@ -62,6 +62,21 @@ async function generateAndAttachPDF(quotation) {
 }
 
 // Create a new quotation
+// Expected products format:
+// products: [
+//   {
+//     image: "image_url",
+//     price: 1000,
+//     product: "product_id", // optional - reference to Product model
+//     quantity: 2,
+//     specification: "Product specification",
+//     title: "Product Title",
+//     model: "Model Number",
+//     total: 2000,
+//     unit: "Nos"
+//     // notes and termsAndConditions will be automatically fetched from the Product model in DB
+//   }
+// ]
 const createQuotation = async (req, res) => {
   try {
     const {
@@ -99,15 +114,20 @@ const createQuotation = async (req, res) => {
       return res.status(400).json({ error: 'Client not found' });
     }
 
-    // Validate products if provided
+    // Validate products and fetch product notes/terms from DB if provided
     if (products && Array.isArray(products) && products.length > 0) {
-      for (const product of products) {
+      for (let i = 0; i < products.length; i++) {
+        const product = products[i];
         // Validate product exists if product ID is provided
         if (product.product) {
           const productExists = await Product.findById(product.product);
           if (!productExists) {
             return res.status(400).json({ error: `Product with ID ${product.product} not found` });
           }
+          
+          // Fetch notes and terms from the product in DB
+          products[i].notes = productExists.notes || '';
+          products[i].termsAndConditions = productExists.termsAndCondition || '';
         }
       }
     }
@@ -119,6 +139,11 @@ const createQuotation = async (req, res) => {
         const productTotal = (product.price || 0) * (product.quantity || 0);
         return sum + productTotal;
       }, 0);
+    }
+
+    // Add machine installation total if it exists
+    if (machineInstallation && machineInstallation.total) {
+      calculatedTotalAmount += machineInstallation.total;
     }
 
     // Store all product details in the quotation
@@ -165,22 +190,24 @@ const getAllQuotations = async (req, res) => {
       status,
       userId,
       search,
-      companyName
+      companyName,
+      companyCode,
+      companyStage,
+      createdBy
     } = req.query;
 
     // Build filter object
     const filter = {};
     
-    // If user is admin, don't filter by userId (show all quotations)
-    // If user is not admin, filter by userId to show only their quotations
-    if (!req.user || req.user.role !== 'admin') {
-      if (userId) {
-        filter.createdBy = userId;
-      } else {
-        // For non-admin users, always filter by their own ID
-        filter.createdBy = req.user._id;
-      }
+    // Handle createdBy filtering
+    if (createdBy) {
+      // If createdBy is provided in query, use it (admin can filter by any user)
+      filter.createdBy = createdBy;
+    } else if (!req.user || req.user.role !== 'admin') {
+      // For non-admin users, always filter by their own ID
+      filter.createdBy = req.user._id;
     }
+    // If admin and no createdBy/userId provided, show all quotations
 
     // Add search filter if provided
     if (search) {
@@ -191,17 +218,31 @@ const getAllQuotations = async (req, res) => {
     }
 
     // Add client filter if provided
-    if (companyName) {
-      const clientDocs = await Client.find({ companyName: companyName }).select('_id');
+    if (companyName || companyCode || companyStage) {
+      let clientFilter = {};
+      
+      if (companyName) {
+        clientFilter.companyName = companyName;
+      }
+      
+      if (companyCode) {
+        clientFilter.companyCode = companyCode;
+      }
+      
+      if (companyStage) {
+        clientFilter.companyStage = companyStage;
+      }
+      
+      const clientDocs = await Client.find(clientFilter).select('_id');
       const clientIds = clientDocs.map(c => c._id.toString());
 
       if (client) {
-        // Check if the client is in the company
+        // Check if the client is in the filtered results
         if (clientIds.includes(client)) {
           filter.client = client;
         } else {
-          // No matching client for this company, return empty result or error
-          return res.json({ quotations: [], message: 'Selected client does not belong to the specified company.' });
+          // No matching client for this company/company code/stage, return empty result or error
+          return res.json({ quotations: [], message: 'Selected client does not belong to the specified company/company code/stage.' });
         }
       } else {
         filter.client = { $in: clientIds };
@@ -274,7 +315,10 @@ const getAllQuotations = async (req, res) => {
         converted,
         status,
         search,
-        companyName
+        companyName,
+        companyCode,
+        companyStage,
+        createdBy
       },
       userRole: req.user?.role,
       isAdmin: req.user?.role === 'admin'
@@ -305,6 +349,21 @@ const getQuotationById = async (req, res) => {
 };
 
 // Update quotation
+// Expected products format (same as create):
+// products: [
+//   {
+//     image: "image_url",
+//     price: 1000,
+//     product: "product_id", // optional - reference to Product model
+//     quantity: 2,
+//     specification: "Product specification",
+//     title: "Product Title",
+//     model: "Model Number",
+//     total: 2000,
+//     unit: "Nos"
+//     // notes and termsAndConditions will be automatically fetched from the Product model in DB
+//   }
+// ]
 const updateQuotation = async (req, res) => {
   try {
     const {
@@ -349,15 +408,20 @@ const updateQuotation = async (req, res) => {
       }
     }
 
-    // Validate products if provided
+    // Validate products and fetch product notes/terms from DB if provided
     if (products !== undefined && Array.isArray(products) && products.length > 0) {
-      for (const product of products) {
+      for (let i = 0; i < products.length; i++) {
+        const product = products[i];
         // Validate product exists if product ID is provided
         if (product.product) {
           const productExists = await Product.findById(product.product);
           if (!productExists) {
             return res.status(400).json({ error: `Product with ID ${product.product} not found` });
           }
+          
+          // Fetch notes and terms from the product in DB
+          products[i].notes = productExists.notes || '';
+          products[i].termsAndConditions = productExists.termsAndCondition || '';
         }
       }
     }
@@ -373,6 +437,11 @@ const updateQuotation = async (req, res) => {
       } else {
         calculatedTotalAmount = 0;
       }
+    }
+
+    // Add machine installation total if it exists
+    if (machineInstallation && machineInstallation.total) {
+      calculatedTotalAmount += machineInstallation.total;
     }
     
     // Remove old PDF if exists
@@ -583,27 +652,53 @@ const exportQuotationsToExcel = async (req, res) => {
       userId,
       search,
       companyName,
+      companyCode,
+      companyStage,
+      createdBy,
       fromMonth,
       toMonth
     } = req.query;
 
     // Build filter object (same as getAllQuotations)
     const filter = {};
-    if (userId) filter.createdBy = userId;
+    
+    // Handle createdBy filtering
+    if (createdBy) {
+      // If createdBy is provided in query, use it (admin can filter by any user)
+      filter.createdBy = createdBy;
+    } else if (!req.user || req.user.role !== 'admin') {
+      // For non-admin users, always filter by their own ID
+      filter.createdBy = req.user._id;
+    }
+    // If admin and no createdBy/userId provided, show all quotations
     if (search) {
       filter.$or = [
         { title: { $regex: search, $options: 'i' } },
         { subject: { $regex: search, $options: 'i' } }
       ];
     }
-    if (companyName) {
-      const clientDocs = await Client.find({ companyName: companyName }).select('_id');
+    if (companyName || companyCode || companyStage) {
+      let clientFilter = {};
+      
+      if (companyName) {
+        clientFilter.companyName = companyName;
+      }
+      
+      if (companyCode) {
+        clientFilter.companyCode = companyCode;
+      }
+      
+      if (companyStage) {
+        clientFilter.companyStage = companyStage;
+      }
+      
+      const clientDocs = await Client.find(clientFilter).select('_id');
       const clientIds = clientDocs.map(c => c._id.toString());
       if (client) {
         if (clientIds.includes(client)) {
           filter.client = client;
         } else {
-          return res.status(400).json({ error: 'Selected client does not belong to the specified company.' });
+          return res.status(400).json({ error: 'Selected client does not belong to the specified company/company code/stage.' });
         }
       } else {
         filter.client = { $in: clientIds };

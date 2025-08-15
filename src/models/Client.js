@@ -69,6 +69,13 @@ const clientSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  companyStage: {
+    type: String,
+    required: false,
+    trim: true,
+    enum: ['foundation', 'building', 'running', 'finished', 'closed'],
+    default: 'foundation'
+  },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -77,9 +84,6 @@ const clientSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
-
-// Create a compound index for email uniqueness across all emails in the array
-clientSchema.index({ email: 1 }, { unique: true });
 
 const Client = mongoose.model('Client', clientSchema);
 

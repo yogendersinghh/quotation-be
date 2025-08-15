@@ -9,7 +9,9 @@ const productSchema = new mongoose.Schema({
   title: { type: String, required: false },
   model: { type: String, required: false },
   total: { type: Number, required: false },
-  unit: { type: String, required: false }
+  unit: { type: String, required: false },
+  notes: { type: String, required: false },
+  termsAndConditions: { type: String, required: false }
 });
 
 const machineInstallationSchema = new mongoose.Schema({
