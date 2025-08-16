@@ -27,7 +27,12 @@ const storage = multer.diskStorage({
   }
 });
 
-const sheetUpload = multer({ storage });
+const sheetUpload = multer({ 
+  storage,
+  limits: {
+    fileSize: 50 * 1024 * 1024 // 50MB in bytes
+  }
+});
 
 // Upload product image (admin only)
 router.post('/product-image', auth, isAdmin, upload.single('image'), uploadImage);
