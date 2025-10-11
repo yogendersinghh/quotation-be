@@ -46,7 +46,7 @@ async function generateAndAttachPDF(quotation) {
   const pdfBuffer = await page.pdf({
     format: 'A4',
     printBackground: true,
-    margin: { top: '120px', bottom: '20mm', left: '20mm' },
+    margin: { top: '120px', right: '20mm', bottom: '20mm', left: '20mm' },
     displayHeaderFooter: true,
     headerTemplate: '<span></span>',
     footerTemplate: '<span></span>'
