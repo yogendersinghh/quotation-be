@@ -45,11 +45,17 @@ const generateQuotationPDF = asyncHandler(async (req, res) => {
         // Set content and wait for network idle
         await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
 
+        // Read the logo image and convert to base64
+        const logoPath = path.join(__dirname, '../../public/ekaur5sitara.png');
+        const logoBuffer = await fs.readFile(logoPath);
+        const logoBase64 = logoBuffer.toString('base64');
+        const logoDataUrl = `data:image/png;base64,${logoBase64}`;
+
         // Define header HTML for every page
         const headerTemplate = `
           <div style="width:100%;padding:0 16px;box-sizing:border-box;">
             <div style="display:flex;align-items:flex-start;gap:10px;">
-            //   <img src='https://via.placeholder.com/40x40/ff9900/ffffff?text=LOGO' style='width:40px;height:auto;margin:0;'>
+              <img src='${logoDataUrl}' style='width:40px;height:auto;margin:0;'>
               <div>
                 <div style='font-size:18px;font-weight:bold;color:#222;'>FIVE STAR TECHNOLOGIES</div>
                 <div style='font-size:10px;color:#111;'>
@@ -147,11 +153,17 @@ const generateAndSavePDF = asyncHandler(async (req, res) => {
         // Set content and wait for network idle
         await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
 
+        // Read the logo image and convert to base64
+        const logoPath = path.join(__dirname, '../../public/ekaur5sitara.png');
+        const logoBuffer = await fs.readFile(logoPath);
+        const logoBase64 = logoBuffer.toString('base64');
+        const logoDataUrl = `data:image/png;base64,${logoBase64}`;
+
         // Define header HTML for every page
         const headerTemplate = `
           <div style="width:100%;padding:0 16px;box-sizing:border-box;">
             <div style="display:flex;align-items:flex-start;gap:10px;">
-              <img src='https://via.placeholder.com/40x40/ff9900/ffffff?text=LOGO' style='width:40px;height:auto;margin:0;'>
+              <img src='${logoDataUrl}' style='width:40px;height:auto;margin:0;'>
               <div>
                 <div style='font-size:18px;font-weight:bold;color:#222;'>FIVE STAR TECHNOLOGIES</div>
                 <div style='font-size:10px;color:#111;'>

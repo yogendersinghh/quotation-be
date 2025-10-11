@@ -23,15 +23,22 @@ async function generateAndAttachPDF(quotation) {
     user: quotation.createdBy,
     BASE_URL: process.env.BASE_URL
   });
+  
+  // Read the logo image and convert to base64
+  const logoPath = path.join(__dirname, '../../public/ekaur5sitara.png');
+  const logoBuffer = await fs.readFile(logoPath);
+  const logoBase64 = logoBuffer.toString('base64');
+  const logoDataUrl = `data:image/png;base64,${logoBase64}`;
+  
   const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
   const page = await browser.newPage();
   await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
-    console.log("${process.env.BASE_URL}/public/ekaur5sitara.png",`${process.env.BASE_URL}/public/ekaur5sitara.png`)
+  
   const headerTemplate = `
     <div style="width:100%;padding:0 32px;box-sizing:border-box;">
       <div style="display:flex;align-items:flex-start;gap:10px;">
       <div style="flex: 0 0 80px; display: flex; align-items: flex-start; justify-content: center;">
-        <img src='https://cms-be.yogendersingh.tech/public/ekaur5sitara.png' style='width:40px;height:50px;margin:0;'/>
+        <img src='${logoDataUrl}' style='width:40px;height:50px;margin:0;'/>
       </div>
         <div>
           <div style='font-size:18px;font-weight:bold;color:#222;'>FIVE STAR TECHNOLOGIES</div>
