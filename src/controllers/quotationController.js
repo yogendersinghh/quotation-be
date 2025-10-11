@@ -48,7 +48,7 @@ async function generateAndAttachPDF(quotation) {
     printBackground: true,
     margin: { top: '120px', right: '20mm', bottom: '20mm', left: '20mm' },
     displayHeaderFooter: true,
-    headerTemplate: '<span></span>',
+    headerTemplate: headerTemplate,
     footerTemplate: '<span></span>'
   });
   await browser.close();
