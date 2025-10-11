@@ -53,7 +53,7 @@ async function generateAndAttachPDF(quotation) {
             Ph: (0120)4548366, email: info@fstindia.in, fivestartech.net@gmail.com<br>
             website: www.fstindia.in
           </div>
-          <div style='font-size:12px;color:#003366;font-weight:bold;margin-top:2px;'>
+          <div style='font-size:10px;color:#003366;font-weight:bold;margin-top:2px;'>
             FIVE STAR helps industries to efficiently manage <span style='color:#003366;'>LIGHT I AIR I ENERGY</span> in partnership with leading brands of India
           </div>
         </div>
