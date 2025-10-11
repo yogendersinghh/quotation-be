@@ -3,8 +3,8 @@ const DefaultMessage = require('../models/DefaultMessage');
 // Create Default Message
 exports.createDefaultMessage = async (req, res) => {
   try {
-    const { formalMessage, notes, billingDetails, termsAndConditions, signatureImage, address } = req.body;
-    const message = new DefaultMessage({ formalMessage, notes, billingDetails, termsAndConditions, signatureImage, address });
+    const { formalMessage, notes, billingDetails, termsAndConditions, signatureImage, companyAddress } = req.body;
+    const message = new DefaultMessage({ formalMessage, notes, billingDetails, termsAndConditions, signatureImage, companyAddress });
     await message.save();
     res.status(201).json(message);
   } catch (err) {
@@ -26,10 +26,10 @@ exports.getAllDefaultMessages = async (req, res) => {
 exports.updateDefaultMessage = async (req, res) => {
   try {
     const { id } = req.params;
-    const { formalMessage, notes, billingDetails, termsAndConditions, signatureImage, address } = req.body;
+    const { formalMessage, notes, billingDetails, termsAndConditions, signatureImage, companyAddress } = req.body;
     const updated = await DefaultMessage.findByIdAndUpdate(
       id,
-      { formalMessage, notes, billingDetails, termsAndConditions, signatureImage, address },
+      { formalMessage, notes, billingDetails, termsAndConditions, signatureImage, companyAddress },
       { new: true }
     );
     if (!updated) return res.status(404).json({ error: 'DefaultMessage not found' });

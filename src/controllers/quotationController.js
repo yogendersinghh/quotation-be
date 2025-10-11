@@ -17,9 +17,9 @@ async function generateAndAttachPDF(quotation) {
   ]);
   console.log("quotation",JSON.stringify(quotation,null,2))
   
-  // Fetch the default message to get the editable address
+  // Fetch the default message to get the editable company address
   const defaultMessage = await DefaultMessage.findOne().sort({ createdAt: -1 });
-  const companyAddress = defaultMessage?.address || 'C-177, Sector-10, Noida - 201301';
+  const companyAddress = defaultMessage?.companyAddress || 'C-177, Sector-10, Noida - 201301';
   
   const templatePath = path.join(__dirname, '../views/quotation.ejs');
   const templateContent = await fs.readFile(templatePath, 'utf8');
