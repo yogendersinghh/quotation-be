@@ -26,11 +26,12 @@ async function generateAndAttachPDF(quotation) {
   const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
   const page = await browser.newPage();
   await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+    console.log("${process.env.BASE_URL}/public/ekaur5sitara.png",`${process.env.BASE_URL}/public/ekaur5sitara.png`)
   const headerTemplate = `
     <div style="width:100%;padding:0 32px;box-sizing:border-box;">
       <div style="display:flex;align-items:flex-start;gap:10px;">
       <div style="flex: 0 0 80px; display: flex; align-items: flex-start; justify-content: center;">
-        <img src='${process.env.BASE_URL}/public/ekaur5sitara.png' style='width:40px;height:auto;margin:0;'/>
+        <img src='${process.env.BASE_URL}/public/ekaur5sitara.png' style='width:40px;height:50px;margin:0;'/>
       </div>
         <div>
           <div style='font-size:18px;font-weight:bold;color:#222;'>FIVE STAR TECHNOLOGIES</div>
