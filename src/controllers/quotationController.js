@@ -1,5 +1,6 @@
 const Quotation = require('../models/Quotation');
 const Product = require('../models/Product');
+const DefaultMessage = require('../models/DefaultMessage');
 const puppeteer = require('puppeteer');
 const ejs = require('ejs');
 const path = require('path');
@@ -15,6 +16,11 @@ async function generateAndAttachPDF(quotation) {
     { path: 'createdBy' }
   ]);
   console.log("quotation",JSON.stringify(quotation,null,2))
+  
+  // Fetch the default message to get the editable address
+  const defaultMessage = await DefaultMessage.findOne().sort({ createdAt: -1 });
+  const companyAddress = defaultMessage?.address || 'C-177, Sector-10, Noida - 201301';
+  
   const templatePath = path.join(__dirname, '../views/quotation.ejs');
   const templateContent = await fs.readFile(templatePath, 'utf8');
   const htmlContent = ejs.render(templateContent, {
@@ -29,7 +35,6 @@ async function generateAndAttachPDF(quotation) {
   const logoBuffer = await fs.readFile(logoPath);
   const logoBase64 = logoBuffer.toString('base64');
   const logoDataUrl = `data:image/png;base64,${logoBase64}`;
-  console.log("🚀 ~ generateAndAttachPDF ~ logoDataUrl:", logoDataUrl)
   
   const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
   const page = await browser.newPage();
@@ -44,7 +49,7 @@ async function generateAndAttachPDF(quotation) {
         <div>
           <div style='font-size:18px;font-weight:bold;color:#222;'>FIVE STAR TECHNOLOGIES</div>
           <div style='font-size:10px;color:#111;'>
-            Address: C-177, Sector-10, Noida - 201301<br>
+            Address: ${companyAddress}<br>
             Ph: (0120)4548366, email: info@fstindia.in, fivestartech.net@gmail.com<br>
             website: www.fstindia.in
           </div>
