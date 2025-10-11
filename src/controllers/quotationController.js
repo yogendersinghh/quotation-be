@@ -39,7 +39,7 @@ async function generateAndAttachPDF(quotation) {
     <div style="width:100%;padding:0 32px;box-sizing:border-box;">
       <div style="display:flex;align-items:flex-start;gap:10px;">
       <div>
-        <img src='${logoDataUrl}' style='width:40px;height:50px;margin:0;'/>
+        <img src='${logoDataUrl}' style='width:60px;height:60px;margin:0;'/>
       </div>
         <div>
           <div style='font-size:18px;font-weight:bold;color:#222;'>FIVE STAR TECHNOLOGIES</div>
