@@ -1,9 +1,13 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const productSchema = new mongoose.Schema({
   image: { type: String, required: false },
   price: { type: Number, required: false },
-  product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: false },
+  product: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Product",
+    required: false,
+  },
   quantity: { type: Number, required: false },
   specification: { type: String, required: false },
   title: { type: String, required: false },
@@ -11,153 +15,162 @@ const productSchema = new mongoose.Schema({
   total: { type: Number, required: false },
   unit: { type: String, required: false },
   notes: { type: String, required: false },
-  termsAndConditions: { type: String, required: false }
+  termsAndConditions: { type: String, required: false },
 });
 
 const machineInstallationSchema = new mongoose.Schema({
   quantity: {
     type: Number,
-    min: 1
+    default: 1,
   },
   unit: {
-    type: String
+    type: String,
   },
   price: {
     type: Number,
-    min: 0
+    default: 0,
   },
   total: {
     type: Number,
-    min: 0
-  }
+    default: 0,
+  },
 });
 
-const quotationSchema = new mongoose.Schema({
-  quotationRefNumber: {
-    type: String,
-    required: true,
-    unique: true
+const quotationSchema = new mongoose.Schema(
+  {
+    quotationRefNumber: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    title: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    client: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Client",
+      required: true,
+    },
+    subject: {
+      type: String,
+      required: false,
+      trim: true,
+    },
+    formalMessage: {
+      type: String,
+      required: false,
+      trim: true,
+    },
+    products: [productSchema],
+    machineInstallation: {
+      type: machineInstallationSchema,
+      required: false,
+    },
+    notes: {
+      type: String,
+      trim: true,
+    },
+    billingDetails: {
+      type: String,
+      required: false,
+      trim: true,
+    },
+    supply: {
+      type: String,
+      required: false,
+      trim: true,
+    },
+    installationAndCommissioning: {
+      type: String,
+      required: false,
+      trim: true,
+    },
+    termsAndConditions: {
+      type: String,
+      required: false,
+      trim: true,
+    },
+    signatureImage: {
+      type: String,
+      required: false,
+    },
+    totalAmount: {
+      type: Number,
+      required: false,
+      min: 0,
+      default: 0,
+    },
+    pdfFileName: {
+      type: String,
+      trim: true,
+    },
+    relatedProducts: [
+      {
+        image: { type: String, required: false },
+        model: { type: String, required: false },
+        specification: { type: String, required: false },
+      },
+    ],
+    suggestedProducts: [
+      {
+        image: { type: String, required: false },
+        model: { type: String, required: false },
+        specification: { type: String, required: false },
+      },
+    ],
+    status: {
+      type: String,
+      enum: ["draft", "accepted", "rejected"],
+      default: "draft",
+    },
+    converted: {
+      type: String,
+      enum: ["Under Development", "Booked", "Lost"],
+      default: "Under Development",
+    },
+    GST: { type: Boolean },
+    gstPercentage: {
+      type: Number,
+      min: 0,
+      max: 100,
+      default: 18,
+    },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
   },
-  title: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  client: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Client',
-    required: true
-  },
-  subject: {
-    type: String,
-    required: false,
-    trim: true
-  },
-  formalMessage: {
-    type: String,
-    required: false,
-    trim: true
-  },
-  products: [productSchema],
-  machineInstallation: {
-    type: machineInstallationSchema,
-    required: false
-  },
-  notes: {
-    type: String,
-    trim: true
-  },
-  billingDetails: {
-    type: String,
-    required: false,
-    trim: true
-  },
-  supply: {
-    type: String,
-    required: false,
-    trim: true
-  },
-  installationAndCommissioning: {
-    type: String,
-    required: false,
-    trim: true
-  },
-  termsAndConditions: {
-    type: String,
-    required: false,
-    trim: true
-  },
-  signatureImage: {
-    type: String,
-    required: false
-  },
-  totalAmount: {
-    type: Number,
-    required: false,
-    min: 0,
-    default: 0
-  },
-  pdfFileName: {
-    type: String,
-    trim: true
-  },
-  relatedProducts: [{
-    image: { type: String, required: false },
-    model: { type: String, required: false },
-    specification: { type: String, required: false }
-  }],
-  suggestedProducts: [{
-    image: { type: String, required: false },
-    model: { type: String, required: false },
-    specification: { type: String, required: false }
-  }],
-  status: {
-    type: String,
-    enum: ['draft', 'accepted', 'rejected'],
-    default: 'draft'
-  },
-  converted: {
-    type: String,
-    enum: ['Under Development', 'Booked', 'Lost'],
-    default: 'Under Development'
-  },
-  GST: { type: Boolean },
-  gstPercentage: {
-    type: Number,
-    min: 0,
-    max: 100,
-    default: 18
-  },
-  createdBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
+  {
+    timestamps: true,
   }
-}, {
-  timestamps: true
-});
+);
 
 // Generate quotation reference number before validation
-quotationSchema.pre('validate', async function(next) {
+quotationSchema.pre("validate", async function (next) {
   try {
     if (this.isNew) {
       const date = new Date();
       const year = date.getFullYear().toString().slice(-2);
-      const month = (date.getMonth() + 1).toString().padStart(2, '0');
-      
+      const month = (date.getMonth() + 1).toString().padStart(2, "0");
+
       // Get the count of quotations for the current month
       const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
       const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-      
+
       const count = await this.constructor.countDocuments({
         createdAt: {
           $gte: startOfMonth,
-          $lte: endOfMonth
-        }
+          $lte: endOfMonth,
+        },
       });
-      
+
       // Generate reference number: QT-YYMM-XXXX
-      this.quotationRefNumber = `QT-${year}${month}-${(count + 1).toString().padStart(4, '0')}`;
+      this.quotationRefNumber = `QT-${year}${month}-${(count + 1)
+        .toString()
+        .padStart(4, "0")}`;
     }
     next();
   } catch (error) {
@@ -165,6 +178,6 @@ quotationSchema.pre('validate', async function(next) {
   }
 });
 
-const Quotation = mongoose.model('Quotation', quotationSchema);
+const Quotation = mongoose.model("Quotation", quotationSchema);
 
-module.exports = Quotation; 
+module.exports = Quotation;
